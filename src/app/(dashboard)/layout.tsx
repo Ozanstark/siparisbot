@@ -40,7 +40,7 @@ export default async function DashboardLayout({
 
   const adminNavigation = [
     { name: 'Customers', href: `${basePath}/customers`, icon: Users },
-    { name: 'Phone Numbers', href: `${basePath}/numbers`, icon: Phone },
+    { name: 'Phone Numbers', href: `${basePath}/phone-numbers`, icon: Phone },
     { name: 'Settings', href: `${basePath}/settings`, icon: Settings },
   ]
 
