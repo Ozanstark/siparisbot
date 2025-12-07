@@ -30,8 +30,8 @@ export default function LoginPage() {
         setError("Invalid email or password")
         setLoading(false)
       } else {
-        router.push("/customer/bots") // Default redirect, middleware handles role
         router.refresh()
+        router.push("/") // Let root page handle role-based redirect
       }
     } catch (err) {
       setError("An unexpected error occurred")
