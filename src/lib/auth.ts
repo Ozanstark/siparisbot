@@ -22,57 +22,69 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials")
-        }
+        throw new Error("Invalid credentials")
+      }
+
+        console.log("Authorize called for:", credentials.email)
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          include: { organization: true },
-        })
+        where: { email: credentials.email },
+        include: { organization: true },
+      })
 
-        if (!user || !user.hashedPassword) {
-          throw new Error("Invalid credentials")
-        }
+        if(!user) {
+        console.log("User not found in DB")
+        throw new Error("Invalid credentials")
+      }
+
+        if(!user.hashedPassword) {
+      console.log("User has no password set")
+           throw new Error("Invalid credentials")
+    }
+
+        console.log("User found, comparing password...")
 
         const isCorrectPassword = await bcrypt.compare(
-          credentials.password,
-          user.hashedPassword
-        )
+      credentials.password,
+      user.hashedPassword
+    )
 
-        if (!isCorrectPassword) {
-          throw new Error("Invalid credentials")
-        }
+        console.log("Password match result:", isCorrectPassword)
+
+        if(!isCorrectPassword) {
+    console.log("Password invalid")
+    throw new Error("Invalid credentials")
+  }
 
         return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          organizationId: user.organizationId,
-          organizationSlug: user.organization.slug,
-        }
-      },
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    organizationId: user.organizationId,
+    organizationSlug: user.organization.slug,
+  }
+},
     }),
   ],
-  callbacks: {
+callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.role = user.role
-        token.organizationId = user.organizationId
-        token.organizationSlug = user.organizationSlug
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-        session.user.organizationId = token.organizationId as string
-        session.user.organizationSlug = token.organizationSlug as string
-      }
-      return session
-    },
+    if (user) {
+      token.id = user.id
+      token.role = user.role
+      token.organizationId = user.organizationId
+      token.organizationSlug = user.organizationSlug
+    }
+    return token
   },
+    async session({ session, token }) {
+    if (token && session.user) {
+      session.user.id = token.id as string
+      session.user.role = token.role as string
+      session.user.organizationId = token.organizationId as string
+      session.user.organizationSlug = token.organizationSlug as string
+    }
+    return session
+  },
+},
 }

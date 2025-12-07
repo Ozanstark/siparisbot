@@ -8,12 +8,12 @@ export default withAuth(
 
     // Admin-only routes
     if (path.startsWith("/admin") && token?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/customer/dashboard", req.url))
+      return NextResponse.redirect(new URL("/customer/bots", req.url))
     }
 
     // Customer routes (Now accessible by ADMIN too)
     if (path.startsWith("/customer") && token?.role !== "CUSTOMER" && token?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/admin/dashboard", req.url))
+      return NextResponse.redirect(new URL("/admin/bots", req.url))
     }
 
     return NextResponse.next()
