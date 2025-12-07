@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { updatePhoneNumberSchema } from "@/lib/validations"
 import { z } from "zod"
 
+export const dynamic = "force-dynamic"
+
 // GET /api/phone-numbers/[numberId] - Get phone number details
 export async function GET(
   req: NextRequest,

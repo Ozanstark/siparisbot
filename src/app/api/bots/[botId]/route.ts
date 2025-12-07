@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { updateBotSchema } from "@/lib/validations"
 import { z } from "zod"
 
+export const dynamic = "force-dynamic"
+
 // GET /api/bots/[botId] - Get bot details
 export async function GET(
   req: NextRequest,

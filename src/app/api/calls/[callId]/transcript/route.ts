@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+export const dynamic = "force-dynamic"
+
 // GET /api/calls/[callId]/transcript - Get formatted transcript
 export async function GET(
   req: NextRequest,

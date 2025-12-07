@@ -6,6 +6,8 @@ import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { createBotSchema } from "@/lib/validations"
 import { z } from "zod"
 
+export const dynamic = "force-dynamic"
+
 // GET /api/bots - List bots (tenant-scoped)
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)

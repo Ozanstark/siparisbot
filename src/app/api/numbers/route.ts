@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { purchasePhoneNumberSchema, importPhoneNumberSchema } from "@/lib/validations"
 import { z } from "zod"
 
+export const dynamic = "force-dynamic"
+
 // GET /api/numbers - List phone numbers (with Retell sync)
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)

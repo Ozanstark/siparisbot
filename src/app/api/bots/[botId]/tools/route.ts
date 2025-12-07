@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { z } from "zod"
 
+export const dynamic = "force-dynamic"
+
 // Zod schema for tool definition validation
 const toolParameterSchema = z.object({
   type: z.enum(["string", "number", "integer", "boolean", "object", "array"]),

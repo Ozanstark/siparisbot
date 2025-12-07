@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getRetellClient, callRetellApi } from "@/lib/retell"
 
+export const dynamic = "force-dynamic"
+
 // DELETE /api/bots/[botId]/knowledge-bases/[assignmentId] - Unassign KB from bot
 export async function DELETE(
   req: NextRequest,

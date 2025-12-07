@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { createCallSchema } from "@/lib/validations"
 import { z } from "zod"
 
+export const dynamic = "force-dynamic"
+
 // GET /api/calls - List calls (tenant-scoped)
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)

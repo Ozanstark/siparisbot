@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+export const dynamic = "force-dynamic"
+
 // POST /api/calls/batch - Create multiple calls from CSV data
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)

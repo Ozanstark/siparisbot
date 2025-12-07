@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import crypto from "crypto"
 
+export const dynamic = "force-dynamic"
+
 /**
  * Webhook endpoint for Retell tool execution callbacks
  * This endpoint is called when an agent invokes a custom tool during a call

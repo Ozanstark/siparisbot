@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { purchasePhoneNumberSchema } from "@/lib/validations"
 import { z } from "zod"
 
+export const dynamic = "force-dynamic"
+
 /**
  * POST /api/phone-numbers/purchase - Purchase a new phone number from Retell
  */

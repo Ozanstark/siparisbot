@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+export const dynamic = "force-dynamic"
+
 // PATCH /api/orders/[orderId] - Update order status
 export async function PATCH(
   req: NextRequest,

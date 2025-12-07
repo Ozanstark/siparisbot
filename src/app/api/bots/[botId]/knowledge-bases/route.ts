@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { z } from "zod"
 
+export const dynamic = "force-dynamic"
+
 const assignKBSchema = z.object({
   knowledgeBaseId: z.string().cuid(),
   topK: z.number().int().min(1).max(20).optional().default(3),

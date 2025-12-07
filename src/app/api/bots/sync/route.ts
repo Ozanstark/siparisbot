@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+export const dynamic = "force-dynamic"
+
 /**
  * POST /api/bots/sync - Sync bots from Retell to database
  * This endpoint fetches all agents from Retell API and creates them in the database
