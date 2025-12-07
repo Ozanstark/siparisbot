@@ -29,6 +29,7 @@ interface BotCardProps {
   }
   onAssign?: (id: string) => void
   onUnassign?: (botId: string, userId: string) => void
+  isAdmin?: boolean
 }
 
 export default function BotCard({ bot, isAdmin, onAssign, onUnassign }: BotCardProps) {
