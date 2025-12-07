@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     for (const agent of retellAgents) {
+      console.log(`Processing agent: ${agent.agent_id}`, JSON.stringify(agent, null, 2))
       try {
         // Check if bot already exists in database
         const existingBot = await prisma.bot.findFirst({
