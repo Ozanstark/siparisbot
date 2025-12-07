@@ -1,0 +1,415 @@
+TEKNİK ŞARTNAME
+Çok Kiracılı Sesli Rezervasyon Asistanı Yazılımı
+
+Doküman No: TS-2025-001
+Revizyon: 1.0
+Tarih: 10 Kasım 2025
+
+1. GENEL TANIMLAR
+1.1 Sistem Tanımı
+Bu şartname, otel ve restoran işletmeleri için çok kiracılı (multi-tenant) mimari ile geliştirilecek sesli rezervasyon asistanı yazılımının teknik gereksinimlerini tanımlar.
+1.2 Terimler Sözlüğü
+	•	Süper Admin: Sistem sağlayıcısı tarafından yetkilendirilmiş, tüm müşterileri yöneten kullanıcı
+	•	Müşteri Yöneticisi: Her işletme sahibi/yöneticisi (otel/restoran)
+	•	Operatör: Sadece rezervasyon görüntüleme yetkisine sahip kullanıcı (resepsiyon/hostes)
+	•	Kiracı (Tenant): Sistemi kullanan her bir işletme birimi
+	•	Mod: İşletme türü (Otel / Restoran / Karma)
+2. MİMARİ GEREKSINIMLER
+2.1 Genel Mimari
+	•	Mimari Yaklaşımı: Multi-tenant SaaS, tenant izolasyonu veri seviyesinde sağlanmalı
+	•	Ölçeklenebilirlik: Minimum 500 eşzamanlı telefon görüşmesi, horizontal scaling desteği
+	•	Erişilebilirlik: 7/24 kesintisiz çalışma, %99.5 uptime garantisi
+	•	Modülerlik: Otel, restoran ve karma modlar arasında geçiş yapılabilir, kod tabanı ortak
+2.2 Sistem Bileşenleri
+Sistem minimum aşağıdaki bileşenlerden oluşmalıdır:
+	•	Yönetim Paneli (Admin Dashboard)
+	•	Süper admin ve müşteri yöneticisi arayüzleri
+	•	Responsive tasarım (mobil/tablet/desktop)
+	•	Modern web standartları (HTML5, CSS3, ES2020+)
+	•	Sesli Asistan Motoru
+	•	Gerçek zamanlı ses tanıma (STT - Speech-to-Text)
+	•	Doğal dil işleme (NLU - Natural Language Understanding)
+	•	Konuşma sentezi (TTS - Text-to-Speech)
+	•	Çok dilli destek (minimum Türkçe, İngilizce)
+	•	Rezervasyon Yönetim Sistemi
+	•	Gerçek zamanlı uygunluk kontrolü
+	•	Çift rezervasyon önleme mekanizması
+	•	Otomatik alternatif öneri algoritması
+	•	Bildirim Sistemi (proje içerisinde en uygun altyapı seçilecek)
+	•	SMS gateway entegrasyonu
+	•	WhatsApp Business API entegrasyonu
+	•	E-posta gönderim altyapısı
+3. FONKSİYONEL GEREKSINIMLER
+3.1 Süper Admin Modülü
+3.1.1 Müşteri Yönetimi
+	•	Yeni müşteri (tenant) oluşturma, düzenleme, devre dışı bırakma
+	•	Müşteri için mod seçimi (Otel / Restoran / Karma)
+	•	Çoklu lokasyon tanımlama ve yönetimi
+	•	Kullanıcı hesapları oluşturma ve rol atama
+3.1.2 Paket ve Limit Yönetimi
+	•	Paket tanımlama (Başlangıç, Büyüyen, Kurumsal)
+	•	Aylık arama dakikası kotası belirleme
+	•	Lokasyon sayısı sınırlandırma
+	•	Özellik açma/kapatma (feature flags)
+3.1.3 Sistem İzleme
+	•	Tüm müşterilerin sistem kullanım istatistikleri
+	•	Hata logları ve sistem sağlık durumu
+	•	Faturalandırma ve ödeme takibi
+3.2 Müşteri Yöneticisi Modülü
+3.2.1 Bot Kişiselleştirme
+	•	Ses Ayarları:
+	•	En az 3 erkek, 3 kadın ses seçeneği
+	•	Ses hızı ve ton ayarlama (yavaş/normal/hızlı)
+	•	Özel marka sesi yükleme (WAV/MP3 format)
+	•	Karşılama ve Üslup:
+	•	Özelleştirilebilir karşılama mesajı (max 500 karakter)
+	•	Hitap tarzı seçimi (resmi/samimi)
+	•	Marka adı otomatik söyleme
+	•	Dil ve Çalışma Saatleri:
+	•	Çoklu dil desteği (öncelik sırası ile)
+	•	Haftalık çalışma saatleri (gün bazlı)
+	•	Tatil günleri ve özel istisna tarihleri
+	•	Mesai dışı özel mesaj tanımlama
+3.2.2 Kapasite ve Uygunluk Yönetimi
+	•	Restoran Modu:
+	•	Masa/alan tanımlama (iç mekan, bahçe, VIP vb.)
+	•	Her alan için kapasite belirleme
+	•	Saatlik zaman slotları (örn: 30 dakika aralıklarla)
+	•	Minimum/maksimum kişi sayısı kuralları
+	•	Özel günlerde (Sevgililer Günü vb.) farklı kapasite
+	•	Otel Modu:
+	•	Oda tipleri (tek kişilik, çift kişilik, suit vb.)
+	•	Her oda tipi için adet ve fiyat
+	•	Sezonluk fiyatlandırma (düşük/orta/yüksek sezon)
+	•	Minimum kalış süresi (gece sayısı)
+	•	Erken check-in / geç check-out ücretlendirme
+	•	Karma Mod:
+	•	Her iki modülün birlikte çalışması
+	•	Modüller arası geçiş yönetimi
+3.2.3 Rezervasyon Yönetimi
+	•	Tüm rezervasyonları listeleme ve filtreleme (tarih aralığı, durum, mod bazlı)
+	•	Rezervasyon detay görüntüleme
+	•	Manuel rezervasyon oluşturma
+	•	Rezervasyon güncelleme (tarih, saat, kişi sayısı)
+	•	Rezervasyon iptali ve not ekleme
+	•	Müşteriye tekrar SMS/WhatsApp onay gönderme
+3.2.4 İçerik Yönetimi
+	•	Restoran İçeriği:
+	•	Menü kategorileri (başlangıçlar, ana yemek, tatlı vb.)
+	•	Yemek kalemleri (ad, açıklama, fiyat, alerjik uyarılar)
+	•	Etiketleme (vegan, vejetaryen, glütensiz, sertifikalı vb.)
+	•	Özel menü (çocuk/diyet/sezonluk)
+	•	Otel İçeriği:
+	•	Oda özellikleri (m², yatak tipi, manzara)
+	•	Otel imkanları (spa, havuz, transfer, kahvaltı)
+	•	Yakın çevre bilgisi (plaj mesafesi, havalimanı transferi)
+3.2.5 Bildirim Ayarları
+	•	Şablon Yönetimi:
+	•	SMS onay şablonu (değişken yer tutucular ile)
+	•	WhatsApp onay şablonu
+	•	E-posta onay şablonu
+	•	Anlık Uyarılar:
+	•	Yeni rezervasyon bildirimi (SMS/e-posta/push)
+	•	İptal bildirimi
+	•	Yaklaşan rezervasyon hatırlatıcısı (1 gün önceden)
+3.2.6 Raporlama ve Analitik
+	•	Genel Metrikler:
+	•	Toplam arama sayısı (başarılı/başarısız)
+	•	Rezervasyon tamamlanma oranı
+	•	Ortalama çağrı süresi
+	•	Doluluk Analizi:
+	•	Restoran: Günlük/haftalık masa doluluk oranı
+	•	Otel: Oda doluluk oranı, RevPAR (gelir/mevcut oda)
+	•	Zaman Analizi:
+	•	En yoğun arama saatleri
+	•	En çok talep edilen günler
+	•	İçerik Analizi:
+	•	En çok sorulan sorular
+	•	En çok talep edilen yemekler/oda tipleri
+	•	Grafik ve Export:
+	•	Dashboard grafikler (çubuk, pasta, çizgi)
+	•	Excel/CSV export
+3.3 Operatör Modülü (Opsiyonel)
+	•	Sadece okuma yetkisi
+	•	Rezervasyon listeleme ve detay görüntüleme
+	•	Rezervasyon güncelleme ve iptal (yetki varsa)
+3.4 Sesli Asistan Akışı (Arayan Tarafı)
+3.4.1 Karşılama
+	•	Müşteri markayla karşılanır (örn: "Merhaba, X Otel rezervasyon hattına hoş geldiniz")
+	•	Doğal ve akıcı konuşma
+	•	Yapay ses olduğu belirtilmez
+3.4.2 Niyet Belirleme
+Bot aşağıdaki niyetleri tespit edebilmelidir:
+	•	Rezervasyon yapma
+	•	Mevcut rezervasyon sorgulama/iptal
+	•	Fiyat bilgisi alma
+	•	Menü/oda bilgisi sorgulama
+	•	Genel bilgi (adres, çalışma saatleri vb.)
+	•	Diğer (anlaşılamayan veya kapsam dışı)
+3.4.3 Bilgi Toplama
+	•	Restoran rezervasyonu için:
+	•	Kaç kişi için?
+	•	Hangi tarih?
+	•	Hangi saat dilimi?
+	•	Tercih edilen alan (iç/dış mekan, VIP vb.)
+	•	Özel istek (doğum günü, bebek sandalyesi vb.)
+	•	Otel rezervasyonu için:
+	•	Giriş tarihi (check-in)
+	•	Çıkış tarihi (check-out)
+	•	Kaç kişi? (yetişkin/çocuk)
+	•	Oda tercihi (tek/çift/suit)
+	•	Ek hizmet talebi (havalimanı transferi, erken giriş vb.)
+Bot bilgileri adım adım toplamalı, kullanıcıyı bekletmemeli, eksik bilgi varsa tekrar sormalıdır.
+3.4.4 Uygunluk Kontrolü
+	•	Talep edilen tarih/saat/kapasite anlık olarak kontrol edilir
+	•	Müsait ise: Özet bilgi verilerek onay alınır
+	•	Müsait değil ise: En yakın 2 alternatif önerilir (farklı saat/tarih/alan)
+	•	Alternatifler de uygun değilse nazikçe bilgi verilir ve randevu almadan bitirilir
+3.4.5 Onay ve Tamamlama
+	•	Ad-soyad, telefon numarası (KVKK onayı ile) alınır
+	•	Rezervasyon özeti tekrarlanır
+	•	Rezervasyon numarası söylenir
+	•	İyi dileklerle kapatılır
+3.4.6 Onay Mesajı Gönderimi
+Çağrı bittikten hemen sonra:
+	•	SMS ile rezervasyon özeti ve onay kodu
+	•	WhatsApp ile zengin mesaj (tarih, kişi, lokasyon, harita linki)
+	•	E-posta ile detaylı rezervasyon bilgisi (PDF ek opsiyonel)
+3.4.7 Hata ve İstisna Yönetimi
+	•	Anlaşılamayan sorular için nazikçe tekrar sor
+	•	Kapsam dışı talepler için kibarca yönlendir (web/telefon)
+	•	Teknik hata durumunda özür dile, alternatif iletişim yolu sun
+4. TEKNİK GEREKSINIMLER
+4.1 Performans Kriterleri
+	•	Sesli asistan yanıt süresi: Maksimum 1.5 saniye (STT + NLU + TTS)
+	•	Uygunluk kontrolü: Maksimum 500 ms (veritabanı sorgusu dahil)
+	•	Dashboard yüklenme: Maksimum 2 saniye (ilk sayfa)
+	•	Eşzamanlı kullanıcı: Minimum 100 aktif panel kullanıcısı
+	•	Eşzamanlı çağrı: Minimum 500 aktif telefon görüşmesi
+4.2 Güvenlik Gereksinimleri
+4.2.1 Kimlik Doğrulama ve Yetkilendirme
+	•	Multi-factor authentication (MFA) desteği (SMS veya TOTP)
+	•	Role-based access control (RBAC)
+	•	Session timeout (15 dakika hareketsizlik)
+	•	Güçlü parola politikası (min 8 karakter, büyük/küçük/rakam/özel karakter)
+4.2.2 Veri Güvenliği
+	•	Veri şifreleme:
+	•	TLS 1.3 ile tüm iletişim şifreli
+	•	Veritabanında hassas alanlar encrypted (AES-256)
+	•	Arama kayıtları (ses dosyası) şifreli depolama
+	•	Veri izolasyonu:
+	•	Her tenant'ın verisi mantıksal/fiziksel olarak ayrı
+	•	Çapraz tenant veri sızıntısı engellenmiş
+	•	Audit log:
+	•	Tüm kritik işlemler loglanır (kim, ne, ne zaman)
+	•	Loglar minimum 1 yıl saklanır, değiştirilemez
+4.2.3 KVKK / GDPR Uyumluluğu
+	•	Kişisel veri saklama süresi ayarlanabilir (default 2 yıl)
+	•	Kullanıcı verilerini silme (right to be forgotten) fonksiyonu
+	•	Telefon numarası maskeleme (gösterimde son 4 hane açık)
+	•	Arama kayıtlarına erişim loglama
+	•	Açık rıza (consent) yönetimi
+4.3 Entegrasyon Gereksinimleri
+4.3.1 Telefon Altyapısı
+	•	SIP trunk veya bulut telefon API entegrasyonu (Twilio, Vonage, Avoxi vb.)
+	•	Gelen/giden arama yönetimi
+	•	Call recording (kayıt) ve depolama
+	•	DTMF (tuş tonu) algılama
+4.3.2 Yapay Zeka Servisleri
+	•	STT (Speech-to-Text):
+	•	Türkçe ve İngilizce destek
+	•	Minimum %90 doğruluk oranı
+	•	Gerçek zamanlı (streaming) destek
+	•	NLU (Natural Language Understanding):
+	•	Intent classification (niyet sınıflandırma)
+	•	Entity extraction (varlık çıkarma: tarih, saat, sayı vb.)
+	•	Sentiment analysis (duygusal ton analizi) opsiyonel
+	•	TTS (Text-to-Speech):
+	•	Doğal ve akıcı Türkçe ses
+	•	Konuşma hızı ve ton ayarlanabilir
+	•	SSML (Speech Synthesis Markup Language) desteği
+4.3.3 Bildirim Servisleri
+	•	SMS: Toplu SMS gateway entegrasyonu (Netgsm, İleti Merkezi vb.)
+	•	WhatsApp: WhatsApp Business API (resmi, onaylı)
+	•	E-posta: SMTP veya transactional e-posta servisi (SendGrid, AWS SES)
+4.3.4 Dış Sistem Entegrasyonları (Opsiyonel)
+	•	PMS (Property Management System): Otel yönetim yazılımları için REST API
+	•	POS (Point of Sale): Restoran kasa sistemleri için API
+	•	CRM: Müşteri ilişkileri yönetimi yazılımları
+	•	Takvim senkronizasyonu: Google Calendar, Outlook
+4.4 Veritabanı ve Veri Yönetimi
+	•	İlişkisel veritabanı (PostgreSQL, MySQL veya eşdeğeri)
+	•	Tenant bazlı veri partitioning veya schema izolasyonu
+	•	Otomatik yedekleme (günlük full, saatlik incremental)
+	•	Point-in-time recovery (PITR) desteği
+	•	Veri retention policy (eskimiş verileri arşivleme/silme)
+4.5 Logging ve Monitoring
+	•	Merkezi log yönetimi (ELK, Grafana Loki veya eşdeğeri)
+	•	Uygulama performans izleme (APM)
+	•	Hata takibi (error tracking: Sentry vb.)
+	•	Uptime monitoring ve alerting
+	•	Telefon çağrı kalite metrikleri (MOS, jitter, packet loss)
+5. KULLANICI ARAYÜZÜ GEREKSINİMLERİ
+5.1 Genel Tasarım Prensipleri
+	•	Modern, temiz ve kullanımı kolay arayüz
+	•	Responsive tasarım (mobil, tablet, desktop)
+	•	Erişilebilirlik standartları (WCAG 2.1 Level AA)
+	•	Türkçe ve İngilizce dil desteği
+	•	Dark mode / Light mode desteği
+5.2 Dashboard Ekranları
+	•	Özet kartlar (toplam rezervasyon, bugünkü arama, doluluk oranı)
+	•	Son 7 günlük grafik (rezervasyon trendi)
+	•	Yaklaşan rezervasyonlar listesi (bugün ve yarın)
+	•	Hızlı erişim butonları (yeni rezervasyon, ayarlar)
+5.3 Kullanılabilirlik
+	•	Maksimum 3 tık ile ana fonksiyonlara erişim
+	•	Inline düzenleme (tablo içinden hızlı değişiklik)
+	•	Toplu işlem desteği (çoklu seçim ile iptal/güncelleme)
+	•	Otomatik kaydetme (taslak özelliği)
+	•	Undo/Redo desteği (kritik işlemlerde)
+6. TEST VE KALİTE GEREKSINİMLERİ
+6.1 Test Türleri
+Aşağıdaki testler yapılmalı ve dokümante edilmelidir:
+	•	Birim Testler (Unit Tests): Kod kapsama oranı minimum %70
+	•	Entegrasyon Testleri: Tüm API endpoint'leri ve dış servis entegrasyonları
+	•	Uçtan Uca Testler (E2E): Kritik kullanıcı senaryoları (rezervasyon akışı, bot konuşması)
+	•	Performans Testleri: Load testing (500 eşzamanlı çağrı), stress testing
+	•	Güvenlik Testleri: Penetrasyon testi, OWASP Top 10 kontrolleri
+	•	Kullanılabilirlik Testleri: Gerçek kullanıcılarla UAT (User Acceptance Testing)
+6.2 Kabul Kriterleri
+Sistem aşağıdaki kriterleri karşılamalıdır:
+	•	1. Tüm fonksiyonel gereksinimler çalışır durumda
+	•	2. Performans kriterleri karşılanıyor (bölüm 4.1)
+	•	3. Güvenlik testleri geçildi, kritik açık yok
+	•	4. %99.5 uptime test ortamında 1 ay boyunca sağlandı
+	•	5. Kullanıcı testlerinde (UAT) minimum %85 memnuniyet skoru
+	•	6. Dokümantasyon tamamlandı (kullanıcı kılavuzu, API dokümantasyonu, sistem mimarisi)
+7. DOKÜMANTASYON GEREKSINİMLERİ
+Aşağıdaki dokümantasyon teslim edilmelidir:
+7.1 Kullanıcı Dokümantasyonu
+	•	Kullanıcı Kılavuzu: Süper admin, müşteri yöneticisi ve operatör için ayrı bölümler
+	•	Hızlı Başlangıç Kılavuzu: İlk 10 dakikada yapılacaklar
+	•	Video Eğitimleri: Temel işlemler için ekran kayıtları (Türkçe seslendirme)
+	•	SSS (FAQ): Sık sorulan sorular ve cevapları
+7.2 Teknik Dokümantasyon
+	•	Sistem Mimarisi Dökümanı: Bileşenler, veri akışı, teknoloji stack
+	•	API Dokümantasyonu: RESTful API endpoint'leri (OpenAPI/Swagger formatında)
+	•	Veritabanı Şeması: ER diyagram, tablo açıklamaları
+	•	Deployment Kılavuzu: Kurulum, konfigürasyon, güncelleme adımları
+	•	Troubleshooting Kılavuzu: Yaygın sorunlar ve çözümleri
+7.3 Bakım ve Destek Dokümantasyonu
+	•	Sistem Bakım Planı: Rutin bakım işlemleri, backup stratejisi
+	•	İzleme ve Alarm Prosedürleri: Hangi metrikleri izleyeceğiz, alarmlar
+	•	Olay Müdahale Planı: Kesinti durumunda adımlar, iletişim matrisi
+8. BAKIM, DESTEK VE SLA
+8.1 Bakım ve Güncelleme
+	•	Yama ve Güvenlik Güncellemeleri: Kritik güvenlik yamaları 24 saat içinde, diğer yamalar aylık periyotlarla
+	•	Özellik Güncellemeleri: Çeyreklik majör release, aylık minör release
+	•	Planlı Bakım Penceresi: Hafta içi gece 02:00-04:00 arası, maksimum 2 saat, 1 hafta önceden bildirim
+8.2 Destek Seviyeleri
+	•	Seviye 1 (Kullanıcı Destek):
+8.3 Hizmet Seviyesi Anlaşması (SLA)
+	•	Uptime: %99.5 (aylık)
+	•	Maksimum kesinti süresi: 3.6 saat/ay
+	•	Plansız kesinti bildirimi: 15 dakika içinde müşterilere bildirim
+	•	Kritik hata çözüm süresi: 4 saat
+	•	Normal hata çözüm süresi: 2 iş günü
+8.4 Yedekleme ve Felaket Kurtarma
+	•	Backup frekansı: Günlük full backup, saatlik incremental
+	•	Backup saklama süresi: 30 gün
+	•	Recovery Time Objective (RTO): 4 saat
+	•	Recovery Point Objective (RPO): 1 saat (maksimum 1 saatlik veri kaybı)
+9. EĞİTİM VE DEVİR TESLİM
+9.1 Eğitim Planı
+	•	Süper Admin Eğitimi: 1 gün (8 saat), yüz yüze veya online
+9.2 Devir Teslim
+Aşağıdaki teslimler yapılmalıdır:
+	•	Canlı sistem erişimi (production URL, admin hesapları)
+	•	Tüm kaynak kodlar (git repository)
+	•	Veritabanı şemaları ve migration scriptleri
+	•	Konfigürasyon dosyaları ve environment değişkenleri
+	•	API anahtarları ve credential'lar (güvenli kanal ile)
+	•	Tüm dokümantasyon (bölüm 7)
+	•	Test senaryoları ve otomatize test scriptleri
+10. PROJE YÖNETİMİ VE İLETİŞİM
+10.1 Geliştirme Metodolojisi
+	•	Çevik (Agile) metodoloji, 2 haftalık sprint'ler
+	•	Sprint başı planlama, sprint sonu demo ve retrospektif
+	•	Günlük stand-up toplantıları (async/sync)
+	•	Backlog yönetimi (Jira, Linear veya eşdeğeri)
+10.2 İletişim Kanalları
+	•	Proje Yönetimi: Haftalık durum toplantısı (1 saat)
+	•	Teknik İletişim: Slack/Discord kanalı, 7/24 erişilebilir
+	•	Dokümantasyon: Confluence, Notion veya Google Docs
+	•	Kod Yönetimi: GitHub, GitLab veya Bitbucket (code review süreci ile)
+10.3 Değişiklik Yönetimi
+	•	Kapsam değişiklikleri yazılı olarak talep edilir
+	•	Etki analizi (süre, maliyet, risk) 3 iş günü içinde sunulur
+	•	Onaylı değişiklikler backlog'a eklenir, sprint planına alınır
+11. RİSKLER VE VARSAYIMLAR
+11.1 Teknik Riskler
+Risk
+Etki
+Olasılık
+Önlem
+Yapay zeka servislerinde kesinti
+Yüksek
+Orta
+Yedek AI provider, fallback mekanizması
+Telefon altyapısında kapasite sorunu
+Yüksek
+Düşük
+Ölçeklenebilir provider seçimi, auto-scaling
+Veri güvenliği ihlali
+Kritik
+Düşük
+Penetrasyon testi, güvenlik audit, şifreleme
+Performans sorunları (yavaşlık)
+Orta
+Orta
+Load testing, caching, CDN kullanımı
+
+
+11.2 Proje Varsayımları
+	•	Müşteri (teklif veren taraf) telefon numaralarını ve gerekli altyapı erişimini sağlayacaktır
+	•	Dış API entegrasyonları için gerekli hesaplar ve yetkiler zamanında temin edilecektir
+	•	Test ve UAT için gerçek kullanıcılar (müşteri tarafından) sağlanacaktır
+	•	Canlıya geçiş için gerekli domain, SSL sertifikası müşteri tarafından hazırlanacaktır
+12. UYGUNLUK BEYANI
+Bu teknik şartname, yazılım geliştirme sözleşmesinin ayrılmaz bir parçasıdır. Sözleşme tarafları bu şartnamede belirtilen tüm gereksinimleri kabul eder ve uygulamayı taahhüt ederler.
+	•	Sağlayıcı (Geliştirici) Taahhütleri:
+	•	Belirtilen tüm fonksiyonel ve teknik gereksinimleri karşılayan yazılımı teslim etmek
+	•	Belirlenen SLA kriterlerine uymak
+	•	Dokümantasyon ve eğitim sağlamak
+	•	Belirlenen destek seviyelerini sunmak
+	•	Müşteri (Teklif Veren) Taahhütleri:
+	•	Gerekli altyapı erişimlerini ve hesapları sağlamak
+	•	Test ve UAT süreçlerinde aktif katılım göstermek
+	•	Kapsam değişikliklerini yazılı olarak bildirmek
+	•	Kabul testlerini zamanında gerçekleştirmek
+13. REVİZYON GEÇMİŞİ
+Versiyon
+Tarih
+Değişiklik
+Hazırlayan
+1.0
+10 Kasım 2025
+İlk versiyon oluşturuldu
+-
+
+14. EKLER
+Ek-A: Kullanılacak Teknoloji Önerileri (Opsiyonel)
+Bu bölüm teknik implementasyon başladığında doldurulacaktır:
+	•	Backend framework
+	•	Frontend framework
+	•	Veritabanı
+	•	AI/ML servisleri
+	•	Cloud provider
+	•	CI/CD pipeline
+Ek-B: Veri Modeli ve API Şema Taslağı
+Detaylı tasarım aşamasında eklenecektir.
+Ek-C: Ekran Akışları ve Wireframe'ler
+UI/UX tasarım aşamasında eklenecektir.
+
+
+Doküman Sonu

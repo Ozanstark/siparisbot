@@ -1,0 +1,588 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Core Multi-Tenant Models
+// ============================================
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+
+  // API Configuration
+  retellApiKey    String?  // Encrypted Retell API key
+  retellWebhookSecret String? // Retell webhook secret
+
+  // Subscription & Quota
+  subscriptionPlan      SubscriptionPlan @default(FREE)
+  monthlyCallMinutes    Int              @default(0)     // Used minutes this period
+  maxMonthlyCallMinutes Int              @default(100)   // Monthly limit
+  currentPeriodStart    DateTime         @default(now())
+  currentPeriodEnd      DateTime?                         // Start + 1 month
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users         User[]
+  bots          Bot[]
+  phoneNumbers  PhoneNumber[]
+  calls         Call[]
+  knowledgeBases KnowledgeBase[]
+  roomTypes     RoomType[]
+
+  @@index([slug])
+  @@index([subscriptionPlan])
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum CustomerType {
+  RESTAURANT
+  HOTEL
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  hashedPassword String
+  role           Role     @default(CUSTOMER)
+  customerType   CustomerType? // Only for CUSTOMER role
+  isSuperAdmin   Boolean  @default(false) // Platform owner (across all orgs)
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignedBots     BotAssignment[]
+  assignedPhones   PhoneNumber[] @relation("AssignedPhoneNumbers")
+  initiatedCalls   Call[]        @relation("CallInitiator")
+  orders           Order[]       @relation("CustomerOrders")
+  reservations     Reservation[] @relation("CustomerReservations")
+  roomTypes        RoomType[]
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([organizationId, role])
+  @@index([customerType])
+  @@index([isSuperAdmin])
+}
+
+// ============================================
+// Bot Management
+// ============================================
+
+model Bot {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  organizationId String
+  createdById    String
+
+  // Retell AI References
+  retellAgentId  String   @unique
+  retellLlmId    String?
+
+  // Bot Configuration (current published version)
+  voiceId        String   @default("11labs-Adrian")
+  model          String   @default("gpt-4o")
+  generalPrompt  String   @db.Text
+  beginMessage   String?
+  webhookUrl     String?
+  language       String   @default("en-US") // Language code (en-US, tr-TR, etc.)
+
+  // Advanced Voice Settings
+  voiceTemperature         Float?   // 0-2, controls voice variation
+  voiceSpeed               Float?   // 0.5-2, controls speech speed
+  responsiveness           Float?   // 0-1, how quickly bot responds
+  interruptionSensitivity  Float?   // 0-1, how sensitive to interruptions
+  enableBackchannel        Boolean  @default(false) // "mm-hmm", "yeah" responses
+  backchannel              Json?    // Backchannel configuration
+  ambientSound             String?  // Background sound (coffee-shop, convention-hall, etc.)
+
+  // Pronunciation & Boosting
+  pronunciationDictionary  Json?    // Array of {word, pronunciation, alphabet}
+  boostedKeywords          String[] @default([]) // Keywords to boost recognition
+
+  // Call Settings
+  normalizeForSpeech       Boolean  @default(true) // Convert numbers/dates to speech
+  optOutSensitiveDataStorage Boolean @default(false) // PII scrubbing
+
+  // Tool/Function Calling
+  customTools    Json?    // Array of custom tool definitions
+
+  // Version Management
+  publishedVersionId String? // Points to the currently published version
+
+  // Metadata
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  organization        Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignments         BotAssignment[]
+  inboundPhones       PhoneNumber[]   @relation("InboundPhoneNumbers")
+  outboundPhones      PhoneNumber[]   @relation("OutboundPhoneNumbers")
+  calls               Call[]
+  versions            BotVersion[]
+  knowledgeBases      BotKnowledgeBase[]
+
+  @@index([organizationId])
+  @@index([retellAgentId])
+  @@index([organizationId, isActive])
+}
+
+// Knowledge Base Management
+model KnowledgeBase {
+  id                  String   @id @default(cuid())
+  organizationId      String
+  retellKnowledgeBaseId String @unique // Retell KB ID
+
+  name                String
+  texts               String[] // Array of text chunks
+  enableAutoRefresh   Boolean  @default(false)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bots                BotKnowledgeBase[]
+
+  @@index([organizationId])
+  @@index([retellKnowledgeBaseId])
+}
+
+// Junction table for Bot <-> KnowledgeBase (many-to-many)
+model BotKnowledgeBase {
+  id              String   @id @default(cuid())
+  botId           String
+  knowledgeBaseId String
+
+  // KB Configuration for this bot
+  topK            Int      @default(3)    // Number of results to retrieve
+  filterScore     Float    @default(0.5)  // Relevance threshold
+
+  assignedAt      DateTime @default(now())
+
+  // Relations
+  bot             Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+
+  @@unique([botId, knowledgeBaseId])
+  @@index([botId])
+  @@index([knowledgeBaseId])
+}
+
+enum VersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model BotVersion {
+  id             String        @id @default(cuid())
+  botId          String
+  versionNumber  Int           // Sequential version number (1, 2, 3...)
+  status         VersionStatus @default(DRAFT)
+
+  // Bot Configuration Snapshot
+  name           String
+  description    String?
+  voiceId        String
+  model          String
+  generalPrompt  String        @db.Text
+  beginMessage   String?
+  customTools    Json?         // Tool definitions at version time
+
+  // Metadata
+  publishedAt    DateTime?     // When this version was published
+  publishedById  String?       // Who published this version
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  bot            Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@unique([botId, versionNumber])
+  @@index([botId])
+  @@index([botId, status])
+  @@index([status])
+}
+
+model BotAssignment {
+  id         String   @id @default(cuid())
+  botId      String
+  userId     String
+  assignedAt DateTime @default(now())
+
+  // Relations
+  bot  Bot  @relation(fields: [botId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([botId, userId])
+  @@index([userId])
+  @@index([botId])
+}
+
+// ============================================
+// Phone Number Management
+// ============================================
+
+model PhoneNumber {
+  id             String   @id @default(cuid())
+  number         String   @unique
+  organizationId String
+  assignedToUserId String?
+
+  // Separate bot binding for inbound and outbound
+  inboundAgentId   String?  // Bot to handle incoming calls
+  outboundAgentId  String?  // Bot to use for outgoing calls
+
+  // Retell AI Reference
+  retellPhoneNumberId String? @unique
+
+  // Metadata
+  nickname       String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignedTo     User?        @relation("AssignedPhoneNumbers", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  inboundAgent   Bot?         @relation("InboundPhoneNumbers", fields: [inboundAgentId], references: [id], onDelete: SetNull)
+  outboundAgent  Bot?         @relation("OutboundPhoneNumbers", fields: [outboundAgentId], references: [id], onDelete: SetNull)
+  calls          Call[]
+
+  @@index([organizationId])
+  @@index([assignedToUserId])
+  @@index([inboundAgentId])
+  @@index([outboundAgentId])
+  @@index([organizationId, isActive])
+}
+
+// ============================================
+// Call Management & Analytics
+// ============================================
+
+enum CallStatus {
+  INITIATED
+  RINGING
+  IN_PROGRESS
+  ENDED
+  FAILED
+  ANALYZED
+}
+
+model Call {
+  id             String     @id @default(cuid())
+  organizationId String
+  botId          String
+  initiatedById  String
+
+  // Retell AI Reference
+  retellCallId   String     @unique
+
+  // Call Details
+  fromNumber     String?
+  fromNumberId   String?
+  toNumber       String
+  status         CallStatus @default(INITIATED)
+
+  // Call Metadata
+  durationMs     Int?
+  recordingUrl   String?
+  transcript     String?    @db.Text
+
+  // Enhanced Transcript Data
+  transcriptObject Json?    // Structured transcript with timestamps
+  transcriptWithToolCalls Json? // Includes tool invocations
+
+  // Multi-Channel & Advanced Recording
+  recordingMultiChannelUrl String? // Separate audio channels
+  scrubbedRecordingUrl     String? // PII-removed recording
+
+  // Debugging & Analysis URLs
+  publicLogUrl             String? // Retell debugging details
+  knowledgeBaseUrl         String? // KB retrieved contents URL
+
+  // Call Flow
+  disconnectionReason      String? // Why call ended
+  transferDestination      String? // If call was transferred
+
+  // Cost & Token Usage
+  llmTokenUsage Json?     // Token consumption details
+  callCost      Json?     // Cost breakdown
+
+  // Timestamps
+  startedAt      DateTime?
+  endedAt        DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // Relations
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bot            Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
+  initiatedBy    User          @relation("CallInitiator", fields: [initiatedById], references: [id], onDelete: Cascade)
+  phoneNumber    PhoneNumber?  @relation(fields: [fromNumberId], references: [id], onDelete: SetNull)
+  analytics      CallAnalytics?
+  webhookLogs    WebhookLog[]
+  order          Order?
+  reservation    Reservation?
+
+  @@index([organizationId])
+  @@index([botId])
+  @@index([initiatedById])
+  @@index([retellCallId])
+  @@index([organizationId, createdAt])
+  @@index([organizationId, status])
+}
+
+model CallAnalytics {
+  id                String   @id @default(cuid())
+  callId            String   @unique
+
+  // Analysis Data
+  summary           String?  @db.Text
+  sentiment         String?
+  successEvaluation String?
+  customAnalysis    Json?
+
+  // E2E Latency Metrics
+  e2eLatencyP50     Float?
+  e2eLatencyP90     Float?
+  e2eLatencyP95     Float?
+  e2eLatencyP99     Float?
+
+  // LLM Latency Metrics
+  llmLatencyP50     Float?
+  llmLatencyP90     Float?
+  llmLatencyP95     Float?
+  llmLatencyP99     Float?
+
+  // ASR (Speech Recognition) Latency
+  asrLatencyP50     Float?
+  asrLatencyP90     Float?
+  asrLatencyP95     Float?
+  asrLatencyP99     Float?
+
+  // TTS (Text-to-Speech) Latency
+  ttsLatencyP50     Float?
+  ttsLatencyP90     Float?
+  ttsLatencyP95     Float?
+  ttsLatencyP99     Float?
+
+  // Knowledge Base Latency
+  kbLatencyP50      Float?
+  kbLatencyP90      Float?
+  kbLatencyP95      Float?
+  kbLatencyP99      Float?
+
+  // Network Metrics
+  llmWebsocketNetworkRttP50  Float?
+  llmWebsocketNetworkRttP90  Float?
+  llmWebsocketNetworkRttP95  Float?
+  llmWebsocketNetworkRttP99  Float?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  call              Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@index([callId])
+  @@index([sentiment])
+  @@index([successEvaluation])
+}
+
+// ============================================
+// Webhook Logging
+// ============================================
+
+enum WebhookEventType {
+  CALL_STARTED
+  CALL_ENDED
+  CALL_ANALYZED
+}
+
+model WebhookLog {
+  id             String            @id @default(cuid())
+  callId         String?
+  organizationId String
+
+  // Webhook Details
+  eventType      WebhookEventType
+  payload        Json
+
+  // Processing Status
+  processed      Boolean           @default(false)
+  error          String?           @db.Text
+
+  createdAt      DateTime          @default(now())
+
+  // Relations
+  call           Call?             @relation(fields: [callId], references: [id], onDelete: SetNull)
+
+  @@index([callId])
+  @@index([organizationId])
+  @@index([eventType])
+  @@index([processed])
+  @@index([createdAt])
+}
+
+// ============================================
+// Order & Reservation Management
+// ============================================
+
+enum OrderStatus {
+  PENDING       // Yeni geldi, bekliyor
+  PREPARING     // Hazırlanıyor
+  READY         // Hazır
+  COMPLETED     // Tamamlandı
+  CANCELLED     // İptal
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  customerId      String      // Restaurant/Hotel owner (User)
+
+  // Customer Info (caller)
+  customerName    String
+  customerPhone   String?
+
+  // Order Details
+  items           String      @db.Text  // "1.5 Urfa, 2 Ayran"
+  totalAmount     Float?
+  deliveryAddress String?     // Teslimat adresi
+  notes           String?     @db.Text
+
+  // Status Tracking
+  status          OrderStatus @default(PENDING)
+
+  // Call Reference
+  callId          String      @unique
+
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  completedAt     DateTime?
+
+  // Relations
+  customer        User        @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Cascade)
+  call            Call        @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([customerId, status])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum ReservationStatus {
+  PENDING       // Bekliyor
+  CONFIRMED     // Onaylandı
+  CHECKED_IN    // Giriş yapıldı
+  CHECKED_OUT   // Çıkış yapıldı
+  CANCELLED     // İptal
+}
+
+model Reservation {
+  id              String            @id @default(cuid())
+  customerId      String            // Hotel owner (User)
+
+  // Guest Info (caller)
+  guestName       String
+  guestPhone      String?
+  guestEmail      String?
+
+  // Reservation Details
+  checkIn         DateTime
+  checkOut        DateTime
+  roomTypeId      String?           // Link to RoomType
+  roomType        String?           // Fallback if no RoomType defined
+  numberOfRooms   Int               @default(1)
+  numberOfGuests  Int               @default(1)
+  specialRequests String?           @db.Text
+
+  // Pricing
+  totalPrice      Float?
+
+  // Status
+  status          ReservationStatus @default(PENDING)
+
+  // Call Reference
+  callId          String            @unique
+
+  // Timestamps
+  createdAt       DateTime          @default(now())
+  confirmedAt     DateTime?
+
+  // Relations
+  customer        User              @relation("CustomerReservations", fields: [customerId], references: [id], onDelete: Cascade)
+  call            Call              @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([customerId, status])
+  @@index([status])
+  @@index([checkIn])
+  @@index([roomTypeId])
+  @@index([createdAt])
+}
+
+// ============================================
+// Hotel Capacity Management
+// ============================================
+
+model RoomType {
+  id              String   @id @default(cuid())
+  organizationId  String
+  customerId      String   // Hotel owner
+
+  // Room Info
+  name            String   // "Deluxe Room", "Standard Room", "Suite"
+  description     String?  @db.Text
+  totalRooms      Int      // Total number of this room type
+
+  // Pricing
+  pricePerNight   Float    // Base price per night
+
+  // Capacity
+  maxGuests       Int      @default(2)
+
+  // Features
+  features        String[] @default([]) // ["Sea View", "Balcony", "Jacuzzi"]
+
+  // Status
+  isActive        Boolean  @default(true)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer        User         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([customerId])
+  @@index([isActive])
+}
