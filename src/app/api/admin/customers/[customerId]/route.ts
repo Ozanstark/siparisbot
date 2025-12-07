@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs"
 
 
 export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 // GET /api/admin/customers/[customerId] - Get customer details
 export async function GET(

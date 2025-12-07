@@ -8,6 +8,7 @@ import { z } from "zod"
 
 
 export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 // GET /api/admin/customers - List customers (admin only)
 export async function GET(req: NextRequest) {
