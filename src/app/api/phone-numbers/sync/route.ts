@@ -6,11 +6,14 @@ import { prisma } from "@/lib/prisma"
 export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
+    console.log(">>>>>>>> [Sync] PHONE NUMBER SYNC STARTED <<<<<<<<")
     const session = await getServerSession(authOptions)
     if (!session?.user || session.user.role !== "ADMIN") {
+        console.log("[Sync] Unauthorized access attempt")
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    console.log(`[Sync] User: ${session.user.email} (${session.user.id})`)
     const { organizationId, id: userId } = session.user
 
     try {
@@ -20,9 +23,11 @@ export async function POST(req: NextRequest) {
         })
 
         if (!organization?.retellApiKey) {
+            console.error("[Sync] Retell API Key NOT FOUND in DB for org:", organizationId)
             return NextResponse.json({ error: "API Key missing" }, { status: 400 })
         }
 
+        console.log("[Sync] Retell API Key found, fetching from Retell...")
         const response = await fetch("https://api.retellai.com/list-phone-numbers", {
             method: "GET",
             headers: {
@@ -36,7 +41,7 @@ export async function POST(req: NextRequest) {
         }
 
         const retellNumbers = await response.json()
-        console.log(`Found ${retellNumbers.length} numbers in Retell`)
+        console.log(`[Sync] Retell returned ${retellNumbers.length} numbers:`, JSON.stringify(retellNumbers.map((n: any) => n.phone_number)))
 
         const results = {
             created: 0,
