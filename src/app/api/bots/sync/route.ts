@@ -52,6 +52,19 @@ export async function POST(req: NextRequest) {
     console.log(`Found ${retellAgents.length} agents in Retell`)
     console.log("First agent structure:", JSON.stringify(retellAgents[0], null, 2))
 
+    // Deduplicate agents: Keep only the one with the latest modification timestamp for each agent_id
+    const latestAgentsMap = new Map();
+
+    for (const agent of retellAgents) {
+      const existing = latestAgentsMap.get(agent.agent_id);
+      if (!existing || agent.last_modification_timestamp > existing.last_modification_timestamp) {
+        latestAgentsMap.set(agent.agent_id, agent);
+      }
+    }
+
+    const uniqueAgents = Array.from(latestAgentsMap.values());
+    console.log(`Processing ${uniqueAgents.length} unique agents after deduplication`);
+
     const results = {
       created: 0,
       updated: 0,
@@ -59,7 +72,7 @@ export async function POST(req: NextRequest) {
       errors: [] as string[]
     }
 
-    for (const agent of retellAgents) {
+    for (const agent of uniqueAgents) {
       console.log(`Processing agent: ${agent.agent_id}`, JSON.stringify(agent, null, 2))
       try {
         // Check if bot already exists in database
