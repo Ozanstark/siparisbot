@@ -10,16 +10,16 @@
 - Multi-tenant architecture
 - Role-based access control
 - Call history and transcript viewing
+- Phone Number Management (Retell API entegrasyonu)
+- Voice Selection (Retell API'den dinamik liste)
 
 ### ❌ Eksik Özellikler
-1. Phone Number Management (Retell API entegrasyonu)
-2. Voice Selection (Retell API'den dinamik liste)
-3. Agent Version Management
-4. Agent Overrides (call-time customization)
-5. Web Call Support
-6. Call Recording Playback UI
-7. Real-time Call Monitoring
-8. Batch Call Functionality
+1. Agent Version Management
+2. Agent Overrides (call-time customization)
+3. Web Call Support
+4. Call Recording Playback UI
+5. Real-time Call Monitoring
+6. Batch Call Functionality
 
 ---
 

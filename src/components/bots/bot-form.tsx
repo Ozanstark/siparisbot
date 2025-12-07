@@ -55,6 +55,7 @@ export default function BotForm({ initialData, botId, isAdmin }: BotFormProps) {
     model: initialData?.model || "gpt-4.1",
     generalPrompt: initialData?.generalPrompt || "",
     beginMessage: initialData?.beginMessage || "",
+    language: initialData?.language || "en-US",
   })
 
   // Load voices from API
@@ -122,22 +123,20 @@ export default function BotForm({ initialData, botId, isAdmin }: BotFormProps) {
           <button
             type="button"
             onClick={() => setActiveTab("basic")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "basic"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "basic"
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
           >
             Basic Settings
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("advanced")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "advanced"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "advanced"
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
           >
             Advanced Settings
           </button>
@@ -147,91 +146,91 @@ export default function BotForm({ initialData, botId, isAdmin }: BotFormProps) {
       {activeTab === "basic" && (
         <div className="space-y-6">
           <div>
-        <label className="block text-sm font-medium mb-2">Bot Name *</label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Customer Support Bot"
-          required
-        />
-      </div>
+            <label className="block text-sm font-medium mb-2">Bot Name *</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Customer Support Bot"
+              required
+            />
+          </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-2">Description</label>
-        <input
-          type="text"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Handles customer inquiries and support requests"
-        />
-      </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Description</label>
+            <input
+              type="text"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Handles customer inquiries and support requests"
+            />
+          </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Voice {isLoadingVoices && <span className="text-xs text-gray-400">(Loading...)</span>}
-          </label>
-          <select
-            value={formData.voiceId}
-            onChange={(e) => setFormData({ ...formData, voiceId: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isLoadingVoices}
-          >
-            {voices.length > 0 ? (
-              voices.map((voice) => (
-                <option key={voice.voice_id} value={voice.voice_id}>
-                  {voice.voice_name} {voice.provider ? `(${voice.provider})` : ""} {voice.gender ? `- ${voice.gender}` : ""}
-                </option>
-              ))
-            ) : (
-              // Fallback if API fails
-              FALLBACK_VOICE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))
-            )}
-          </select>
-          {voices.length > 0 && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Voice {isLoadingVoices && <span className="text-xs text-gray-400">(Loading...)</span>}
+              </label>
+              <select
+                value={formData.voiceId}
+                onChange={(e) => setFormData({ ...formData, voiceId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoadingVoices}
+              >
+                {voices.length > 0 ? (
+                  voices.map((voice) => (
+                    <option key={voice.voice_id} value={voice.voice_id}>
+                      {voice.voice_name} {voice.provider ? `(${voice.provider})` : ""} {voice.gender ? `- ${voice.gender}` : ""}
+                    </option>
+                  ))
+                ) : (
+                  // Fallback if API fails
+                  FALLBACK_VOICE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))
+                )}
+              </select>
+              {voices.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {voices.length} voices available from Retell
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Model</label>
+              <select
+                value={formData.model}
+                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {MODEL_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">General Prompt *</label>
+            <textarea
+              value={formData.generalPrompt}
+              onChange={(e) => setFormData({ ...formData, generalPrompt: e.target.value })}
+              rows={6}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="You are a helpful customer support assistant. You help customers with their inquiries and provide accurate information."
+              required
+            />
             <p className="text-xs text-gray-500 mt-1">
-              {voices.length} voices available from Retell
+              This is the system prompt that defines the bot's behavior
             </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Model</label>
-          <select
-            value={formData.model}
-            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {MODEL_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">General Prompt *</label>
-        <textarea
-          value={formData.generalPrompt}
-          onChange={(e) => setFormData({ ...formData, generalPrompt: e.target.value })}
-          rows={6}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="You are a helpful customer support assistant. You help customers with their inquiries and provide accurate information."
-          required
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          This is the system prompt that defines the bot's behavior
-        </p>
-      </div>
+          </div>
 
           <div>
             <label className="block text-sm font-medium mb-2">Begin Message</label>
@@ -250,7 +249,10 @@ export default function BotForm({ initialData, botId, isAdmin }: BotFormProps) {
       )}
 
       {activeTab === "advanced" && (
-        <AdvancedBotSettings formData={formData} setFormData={setFormData} />
+        <AdvancedBotSettings
+          formData={formData}
+          setFormData={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
+        />
       )}
 
       <div className="flex justify-end gap-4 pt-4 border-t">

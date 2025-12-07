@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getRetellClient } from "@/lib/retell"
+import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { z } from "zod"
 
 const updateKnowledgeBaseSchema = z.object({
@@ -91,12 +91,17 @@ export async function PUT(
     // Get organization-specific Retell client
     const retellClient = await getRetellClient(organizationId)
 
-    // Update in Retell
-    await retellClient.knowledgeBase.update(existingKB.retellKnowledgeBaseId, {
-      ...(data.name && { knowledge_base_name: data.name }),
-      ...(data.texts && { texts: data.texts }),
-      ...(data.enableAutoRefresh !== undefined && { enable_auto_refresh: data.enableAutoRefresh }),
-    })
+    // Update KB in Retell (using raw API)
+    await callRetellApi(
+      "PATCH",
+      `/knowledge-base/${existingKB.retellKnowledgeBaseId}`, // Try RESTful path first
+      {
+        ...(data.name && { knowledge_base_name: data.name }),
+        ...(data.texts && { texts: data.texts }),
+        ...(data.enableAutoRefresh !== undefined && { enable_auto_refresh: data.enableAutoRefresh }),
+      },
+      organizationId
+    )
 
     // Update in database
     const knowledgeBase = await prisma.knowledgeBase.update({
@@ -164,8 +169,13 @@ export async function DELETE(
     // Get organization-specific Retell client
     const retellClient = await getRetellClient(organizationId)
 
-    // Delete from Retell
-    await retellClient.knowledgeBase.delete(existingKB.retellKnowledgeBaseId)
+    // Delete KB from Retell (using raw API)
+    await callRetellApi(
+      "DELETE",
+      `/knowledge-base/${existingKB.retellKnowledgeBaseId}`,
+      null,
+      organizationId
+    )
 
     // Delete from database (cascade will remove BotKnowledgeBase entries)
     await prisma.knowledgeBase.delete({

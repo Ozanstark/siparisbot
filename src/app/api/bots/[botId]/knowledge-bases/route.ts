@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getRetellClient } from "@/lib/retell"
+import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { z } from "zod"
 
 const assignKBSchema = z.object({
@@ -135,9 +135,18 @@ export async function POST(
       }
     ]
 
-    await retellClient.agent.update(bot.retellAgentId, {
-      knowledge_base_ids: knowledgeBaseIds
-    })
+    // Verify we have an LLM ID
+    if (!bot.retellLlmId) {
+      throw new Error("Bot does not have an associated LLM ID")
+    }
+
+    // Update LLM in Retell to include KB (using raw API)
+    await callRetellApi(
+      "PATCH",
+      `/update-retell-llm/${bot.retellLlmId}`,
+      { knowledge_base_ids: knowledgeBaseIds },
+      organizationId
+    )
 
     // Create assignment in database
     const assignment = await prisma.botKnowledgeBase.create({

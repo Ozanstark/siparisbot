@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card"
+import { Button } from "../../../../../components/ui/button"
+import { Badge } from "../../../../../components/ui/badge"
 import { ArrowLeft, Phone, MapPin, Clock, FileText, PlayCircle, Check, ChefHat, X } from "lucide-react"
 
 type OrderStatus = "PENDING" | "PREPARING" | "READY" | "COMPLETED" | "CANCELLED"

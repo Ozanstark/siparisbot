@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getRetellClient } from "@/lib/retell"
+import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { z } from "zod"
 
 const createKnowledgeBaseSchema = z.object({
@@ -57,12 +57,12 @@ export async function POST(req: NextRequest) {
     // Get organization-specific Retell client
     const retellClient = await getRetellClient(organizationId)
 
-    // Create knowledge base in Retell
-    const retellKB = await retellClient.knowledgeBase.create({
+    // Create knowledge base in Retell (using raw API)
+    const retellKB = await callRetellApi("POST", "/create-knowledge-base", {
       knowledge_base_name: data.name,
       texts: data.texts,
       enable_auto_refresh: data.enableAutoRefresh,
-    })
+    }, organizationId) as any
 
     // Save to database
     const knowledgeBase = await prisma.knowledgeBase.create({

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getRetellClient } from "@/lib/retell"
+import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { z } from "zod"
 
 // Zod schema for tool definition validation
@@ -110,11 +110,14 @@ export async function PUT(
     // Get organization-specific Retell client
     const retellClient = await getRetellClient(organizationId)
 
-    // Update LLM with tools
+    // Update LLM with tools (using raw API)
     if (bot.retellLlmId) {
-      await retellClient.llm.update(bot.retellLlmId, {
-        tools: data.customTools as any
-      })
+      await callRetellApi(
+        "PATCH",
+        `/update-retell-llm/${bot.retellLlmId}`,
+        { tools: data.customTools },
+        organizationId
+      )
     }
 
     // Update bot in database

@@ -4,6 +4,17 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Bot } from "@prisma/client"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Edit2, Trash2, Loader2 } from "lucide-react"
 
 interface BotCardProps {
   bot: Bot & {
@@ -48,72 +59,72 @@ export default function BotCard({ bot, isAdmin }: BotCardProps) {
     }
   }
   return (
-    <div className="border rounded-lg p-6 hover:shadow-lg transition-shadow bg-white">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg font-semibold">{bot.name}</h3>
-          {bot.description && (
-            <p className="text-sm text-gray-600 mt-1">{bot.description}</p>
-          )}
+    <Card className="hover:scale-[1.02] transition-all duration-300">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg font-bold">{bot.name}</CardTitle>
+            {bot.description && (
+              <CardDescription className="mt-1 line-clamp-1">{bot.description}</CardDescription>
+            )}
+          </div>
+          <Badge variant={bot.isActive ? "default" : "secondary"}>
+            {bot.isActive ? "Active" : "Inactive"}
+          </Badge>
         </div>
-        <span
-          className={`px-2 py-1 text-xs rounded ${
-            bot.isActive
-              ? "bg-green-100 text-green-800"
-              : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          {bot.isActive ? "Active" : "Inactive"}
-        </span>
-      </div>
+      </CardHeader>
 
-      <div className="space-y-2 text-sm text-gray-600 mb-4">
-        <div className="flex justify-between">
-          <span>Voice:</span>
+      <CardContent className="pb-3 space-y-2.5 text-sm">
+        <div className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
+          <span className="text-muted-foreground">Voice</span>
           <span className="font-medium">{bot.voiceId}</span>
         </div>
-        <div className="flex justify-between">
-          <span>Model:</span>
+        <div className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
+          <span className="text-muted-foreground">Model</span>
           <span className="font-medium">{bot.model}</span>
         </div>
         {bot._count && (
-          <div className="flex justify-between">
-            <span>Total Calls:</span>
+          <div className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
+            <span className="text-muted-foreground">Total Calls</span>
             <span className="font-medium">{bot._count.calls}</span>
           </div>
         )}
         {isAdmin && bot.assignments && (
-          <div className="flex justify-between">
-            <span>Assigned To:</span>
-            <span className="font-medium">{bot.assignments.length} customers</span>
+          <div className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
+            <span className="text-muted-foreground">Assigned To</span>
+            <span className="font-medium">{bot.assignments.length} assignments</span>
           </div>
         )}
-      </div>
+      </CardContent>
 
-      <div className="flex gap-2">
+      <CardFooter className="pt-3 gap-2">
         <Link
           href={isAdmin ? `/admin/bots/${bot.id}` : `/customer/bots/${bot.id}`}
-          className="flex-1 text-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          className="flex-1"
         >
-          View Details
+          <Button className="w-full" variant="default">
+            View Details
+          </Button>
         </Link>
         <Link
           href={isAdmin ? `/admin/bots/${bot.id}/edit` : `/customer/bots/${bot.id}/edit`}
-          className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
         >
-          Edit
+          <Button variant="outline" size="icon">
+            <Edit2 className="h-4 w-4" />
+          </Button>
         </Link>
         {isAdmin && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100 transition-colors disabled:opacity-50"
-            title="Delete bot"
+            className="text-muted-foreground hover:text-red-600 hover:bg-red-50"
           >
-            {isDeleting ? "..." : "🗑️"}
-          </button>
+            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+          </Button>
         )}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   )
 }

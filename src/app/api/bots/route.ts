@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getRetellClient } from "@/lib/retell"
+import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { createBotSchema } from "@/lib/validations"
 import { z } from "zod"
 
@@ -67,39 +67,40 @@ export async function POST(req: NextRequest) {
     // Get organization-specific Retell client
     const retellClient = await getRetellClient(organizationId)
 
-    // Step 1: Create LLM in Retell
-    const llm = await retellClient.llm.create({
+    // Step 1: Create LLM in Retell (using raw API as SDK v2 lacks it)
+    const llm = await callRetellApi("POST", "/create-retell-llm", {
       model: data.model,
       general_prompt: data.generalPrompt,
       begin_message: data.beginMessage || "Hello! How can I help you today?"
-    })
+    }, organizationId) as any
 
     // Step 2: Create Agent in Retell with advanced settings
     const webhookUrl = data.webhookUrl || `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/retell`
 
     const agentPayload: any = {
-      response_engine: {
-        llm_id: llm.llm_id,
-        type: "retell-llm"
-      },
-      voice_id: data.voiceId,
-      agent_name: data.name,
-      webhook_url: webhookUrl,
-      language: data.language || "en-US"
+      llmWebsocketUrl: llm.llm_websocket_url,
+      voiceId: data.voiceId,
+      agentName: data.name,
+      webhookUrl: webhookUrl,
+      language: data.language || "en-US", // Cast to Language type if needed
     }
 
-    // Add advanced voice settings if provided
-    if (data.voiceTemperature !== undefined) agentPayload.voice_temperature = data.voiceTemperature
-    if (data.voiceSpeed !== undefined) agentPayload.voice_speed = data.voiceSpeed
+    // Add advanced voice settings if provided (camelCase for SDK v2)
+    if (data.voiceTemperature !== undefined) agentPayload.voiceTemperature = data.voiceTemperature
+    if (data.voiceSpeed !== undefined) agentPayload.voiceSpeed = data.voiceSpeed
     if (data.responsiveness !== undefined) agentPayload.responsiveness = data.responsiveness
-    if (data.interruptionSensitivity !== undefined) agentPayload.interruption_sensitivity = data.interruptionSensitivity
-    if (data.enableBackchannel !== undefined) agentPayload.enable_backchannel = data.enableBackchannel
-    if (data.ambientSound) agentPayload.ambient_sound = data.ambientSound
-    if (data.boostedKeywords && data.boostedKeywords.length > 0) agentPayload.boosted_keywords = data.boostedKeywords
-    if (data.normalizeForSpeech !== undefined) agentPayload.normalize_for_speech = data.normalizeForSpeech
-    if (data.optOutSensitiveDataStorage !== undefined) agentPayload.opt_out_sensitive_data_storage = data.optOutSensitiveDataStorage
+    // interruptionSensitivity seems removed in v2
+    if (data.enableBackchannel !== undefined) agentPayload.enableBackchannel = data.enableBackchannel
+    if (data.ambientSound) agentPayload.ambientSound = data.ambientSound
+    if (data.boostedKeywords && data.boostedKeywords.length > 0) agentPayload.boostedKeywords = data.boostedKeywords
+    if (data.normalizeForSpeech !== undefined) agentPayload.formatText = data.normalizeForSpeech
+    if (data.optOutSensitiveDataStorage !== undefined) agentPayload.optOutSensitiveDataStorage = data.optOutSensitiveDataStorage
 
-    const agent = await retellClient.agent.create(agentPayload)
+    const agent = await retellClient.createAgent(agentPayload)
+
+    if (!agent.agent) {
+      throw new Error("Failed to create agent: No agent returned")
+    }
 
     // Step 3: Create bot in database
     const bot = await prisma.bot.create({
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
         description: data.description,
         organizationId,
         createdById: userId,
-        retellAgentId: agent.agent_id,
+        retellAgentId: agent.agent.agentId,
         retellLlmId: llm.llm_id,
         voiceId: data.voiceId,
         model: data.model,

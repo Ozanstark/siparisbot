@@ -182,13 +182,12 @@ export default function VersionManager({ botId, isAdmin }: VersionManagerProps) 
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-gray-500">
                       {version.publishedAt
-                        ? `Published ${formatDate(version.publishedAt)}`
-                        : `Created ${formatDate(version.createdAt)}`}
+                        ? `Published ${formatDate(new Date(version.publishedAt))}`
+                        : `Created ${formatDate(new Date(version.createdAt))}`}
                     </span>
                     <svg
-                      className={`w-5 h-5 text-gray-400 transition-transform ${
-                        expandedVersion === version.id ? "rotate-180" : ""
-                      }`}
+                      className={`w-5 h-5 text-gray-400 transition-transform ${expandedVersion === version.id ? "rotate-180" : ""
+                        }`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

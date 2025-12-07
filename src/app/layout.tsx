@@ -3,9 +3,12 @@ import "./globals.css"
 import { Providers } from "@/components/providers"
 
 export const metadata: Metadata = {
-  title: "Retell AI Dashboard",
-  description: "Multi-tenant voice bot management dashboard",
+  title: "RezonAll - Voice AI Dashboard",
+  description: "Advanced voice bot management platform",
 }
+
+import { Inter } from "next/font/google"
+const inter = Inter({ subsets: ["latin"] })
 
 export default function RootLayout({
   children,
@@ -14,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>
     </html>

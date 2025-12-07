@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getRetellClient } from "@/lib/retell"
+import { getRetellClient, callRetellApi } from "@/lib/retell"
 
 // DELETE /api/bots/[botId]/knowledge-bases/[assignmentId] - Unassign KB from bot
 export async function DELETE(
@@ -65,10 +65,18 @@ export async function DELETE(
       filter_score: a.filterScore,
     }))
 
-    // Update agent in Retell
-    await retellClient.agent.update(bot.retellAgentId, {
-      knowledge_base_ids: knowledgeBaseIds.length > 0 ? knowledgeBaseIds : []
-    })
+    // Verify we have an LLM ID
+    if (!bot.retellLlmId) {
+      throw new Error("Bot does not have an associated LLM ID")
+    }
+
+    // Update LLM in Retell (using raw API)
+    await callRetellApi(
+      "PATCH",
+      `/update-retell-llm/${bot.retellLlmId}`,
+      { knowledge_base_ids: knowledgeBaseIds.length > 0 ? knowledgeBaseIds : [] },
+      organizationId
+    )
 
     // Delete assignment from database
     await prisma.botKnowledgeBase.delete({

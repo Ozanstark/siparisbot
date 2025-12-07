@@ -210,9 +210,9 @@ function ToolEditorDialog({ botId, existingTool, existingTools, onClose, onSucce
   const [name, setName] = useState(existingTool?.function.name || "")
   const [description, setDescription] = useState(existingTool?.function.description || "")
   const [webhookUrl, setWebhookUrl] = useState(existingTool?.function.url || "")
-  const [async, setAsync] = useState(existingTool?.function.async || false)
-  const [speakDuring, setSpeakDuring] = useState(existingTool?.function.speak_during_execution || false)
-  const [speakAfter, setSpeakAfter] = useState(existingTool?.function.speak_after_execution || true)
+  const [async, setAsync] = useState<boolean>(existingTool?.function.async ?? false)
+  const [speakDuring, setSpeakDuring] = useState<boolean>(existingTool?.function.speak_during_execution ?? false)
+  const [speakAfter, setSpeakAfter] = useState<boolean>(existingTool?.function.speak_after_execution ?? true)
   const [parameters, setParameters] = useState(
     JSON.stringify(existingTool?.function.parameters || {
       type: "object",
@@ -314,22 +314,20 @@ function ToolEditorDialog({ botId, existingTool, existingTools, onClose, onSucce
             <button
               type="button"
               onClick={() => setJsonMode(false)}
-              className={`px-3 py-1 text-sm rounded ${
-                !jsonMode
+              className={`px-3 py-1 text-sm rounded ${!jsonMode
                   ? "bg-orange-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+                }`}
             >
               Form Mode
             </button>
             <button
               type="button"
               onClick={() => setJsonMode(true)}
-              className={`px-3 py-1 text-sm rounded ${
-                jsonMode
+              className={`px-3 py-1 text-sm rounded ${jsonMode
                   ? "bg-orange-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+                }`}
             >
               JSON Mode
             </button>

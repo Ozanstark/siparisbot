@@ -11,8 +11,8 @@ export default withAuth(
       return NextResponse.redirect(new URL("/customer/dashboard", req.url))
     }
 
-    // Customer routes
-    if (path.startsWith("/customer") && token?.role !== "CUSTOMER") {
+    // Customer routes (Now accessible by ADMIN too)
+    if (path.startsWith("/customer") && token?.role !== "CUSTOMER" && token?.role !== "ADMIN") {
       return NextResponse.redirect(new URL("/admin/dashboard", req.url))
     }
 
