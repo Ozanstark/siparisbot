@@ -50,19 +50,24 @@ export async function POST(req: NextRequest) {
             where: { organizationId },
             select: { id: true, retellAgentId: true }
         })
+        console.log(`[Sync] Found ${bots.length} local bots for Agent Id mapping`)
         const agentMap = new Map(bots.map(b => [b.retellAgentId, b.id]))
 
         for (const phone of retellNumbers) {
+            console.log(`[Sync] Processing number: ${phone.phone_number}`)
             try {
                 const existingPhone = await prisma.phoneNumber.findUnique({
                     where: {
                         number: phone.phone_number
                     }
                 })
+                console.log(`[Sync] Found existing phone in DB? ${!!existingPhone}`)
 
                 // Resolve local bot IDs
                 const localInboundId = phone.inbound_agent_id ? agentMap.get(phone.inbound_agent_id) : null
                 const localOutboundId = phone.outbound_agent_id ? agentMap.get(phone.outbound_agent_id) : null
+
+                console.log(`[Sync] Resolved Inbound Agent: ${phone.inbound_agent_id} -> ${localInboundId}`)
 
                 if (existingPhone) {
                     await prisma.phoneNumber.update({
@@ -91,9 +96,10 @@ export async function POST(req: NextRequest) {
                         }
                     })
                     results.created++
+                    console.log(`[Sync] Created new phone record`)
                 }
             } catch (error: any) {
-                console.error(`Error processing number ${phone.phone_number}:`, error)
+                console.error(`[Sync] Error processing number ${phone.phone_number}:`, error)
                 results.errors.push(`${phone.phone_number}: ${error.message}`)
                 results.skipped++
             }
