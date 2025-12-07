@@ -15,14 +15,14 @@ export default function AdminBotsHeader() {
   return (
     <div className="flex justify-between items-center mb-8">
       <div>
-        <h1 className="text-3xl font-bold">Bots</h1>
-        <p className="text-gray-600 mt-1">Manage your voice bots</p>
+        <h1 className="text-3xl font-bold">Asistanlar</h1>
+        <p className="text-gray-600 mt-1">Sesli asistanlarınızı yönetin</p>
       </div>
       <div className="flex gap-3">
         <SyncBotsButton onSuccess={handleSyncSuccess} />
         <Link href="/admin/bots/new">
           <Button className="shadow-lg shadow-primary/20">
-            + Create Bot
+            + Asistan Oluştur
           </Button>
         </Link>
       </div>

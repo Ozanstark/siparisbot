@@ -40,7 +40,7 @@ export default function BotCard({ bot, isAdmin, onAssign, onUnassign }: BotCardP
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault()
 
-    if (!confirm(`Are you sure you want to delete "${bot.name}"? This will also delete it from Retell AI.`)) {
+    if (!confirm(`"${bot.name}" adlı asistanı silmek istediğinize emin misiniz? Bu işlem Retell AI üzerinden de silecektir.`)) {
       return
     }
 
@@ -63,7 +63,7 @@ export default function BotCard({ bot, isAdmin, onAssign, onUnassign }: BotCardP
   }
 
   const handleUnassign = async (userId: string) => {
-    if (!confirm("Are you sure you want to unassign this bot from the user?")) return
+    if (!confirm("Bu asistanın atamasını kaldırmak istediğinize emin misiniz?")) return
 
     setIsUnassigning(userId)
     try {
@@ -84,14 +84,14 @@ export default function BotCard({ bot, isAdmin, onAssign, onUnassign }: BotCardP
             )}
           </div>
           <Badge variant={bot.isActive ? "default" : "secondary"}>
-            {bot.isActive ? "Active" : "Inactive"}
+            {bot.isActive ? "Aktif" : "Pasif"}
           </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="pb-3 space-y-2.5 text-sm">
         <div className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
-          <span className="text-muted-foreground">Voice</span>
+          <span className="text-muted-foreground">Ses</span>
           <span className="font-medium">{bot.voiceId}</span>
         </div>
         <div className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
@@ -100,13 +100,13 @@ export default function BotCard({ bot, isAdmin, onAssign, onUnassign }: BotCardP
         </div>
         {bot._count && (
           <div className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
-            <span className="text-muted-foreground">Total Calls</span>
+            <span className="text-muted-foreground">Toplam Görüşme</span>
             <span className="font-medium">{bot._count.calls}</span>
           </div>
         )}
         {isAdmin && bot.assignments && bot.assignments.length > 0 && (
           <div className="py-2 border-t mt-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">Assigned To</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">Atanan Kişiler</span>
             <div className="space-y-1">
               {bot.assignments.map((assignment) => (
                 <div key={assignment.user.id} className="flex justify-between items-center bg-gray-50 px-2 py-1 rounded text-xs">
@@ -131,7 +131,7 @@ export default function BotCard({ bot, isAdmin, onAssign, onUnassign }: BotCardP
           className="flex-1"
         >
           <Button className="w-full" variant="default">
-            View Details
+            Detaylar
           </Button>
         </Link>
         <Link
@@ -148,7 +148,7 @@ export default function BotCard({ bot, isAdmin, onAssign, onUnassign }: BotCardP
               onClick={() => onAssign?.(bot.id)}
               className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
             >
-              Assign
+              Ata
             </Button>
             <Button
               variant="ghost"

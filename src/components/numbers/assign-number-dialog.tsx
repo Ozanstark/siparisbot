@@ -55,7 +55,7 @@ export default function AssignNumberDialog({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h2 className="text-2xl font-bold mb-4">Assign Number to Customer</h2>
+        <h2 className="text-2xl font-bold mb-4">Müşteriye Numara Ata</h2>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
@@ -65,14 +65,14 @@ export default function AssignNumberDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Select Customer *</label>
+            <label className="block text-sm font-medium mb-2">Müşteri Seç *</label>
             <select
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value="">Choose a customer...</option>
+              <option value="">Bir müşteri seçin...</option>
               {customers.map((customer) => (
                 <option key={customer.id} value={customer.id}>
                   {customer.name || customer.email}
@@ -88,14 +88,14 @@ export default function AssignNumberDialog({
               disabled={isLoading}
               className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              Cancel
+              İptal
             </button>
             <button
               type="submit"
               disabled={isLoading}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "Assigning..." : "Assign"}
+              {isLoading ? "Atanıyor..." : "Ata"}
             </button>
           </div>
         </form>

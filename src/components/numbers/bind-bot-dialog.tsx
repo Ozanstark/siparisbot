@@ -70,7 +70,7 @@ export default function BindBotDialog({ isOpen, onClose, numberId, currentInboun
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-        <h2 className="text-2xl font-bold mb-4">Bind Bots to Phone Number</h2>
+        <h2 className="text-2xl font-bold mb-4">Asistanları Numaraya Bağla</h2>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
@@ -81,43 +81,43 @@ export default function BindBotDialog({ isOpen, onClose, numberId, currentInboun
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">
-              Inbound Bot (Incoming Calls)
+              Gelen Arama Asistanı (Inbound)
             </label>
             <select
               value={selectedInboundBotId}
               onChange={(e) => setSelectedInboundBotId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">No bot assigned</option>
+              <option value="">Asistan atanmadı</option>
               {bots.map((bot) => (
                 <option key={bot.id} value={bot.id}>
-                  {bot.name} {bot.isActive ? "" : "(Inactive)"}
+                  {bot.name} {bot.isActive ? "" : "(Pasif)"}
                 </option>
               ))}
             </select>
             <p className="text-xs text-gray-500 mt-1">
-              Bot that will handle incoming calls to this phone number
+              Bu numaraya gelen çağrıları karşılayacak asistan
             </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-2">
-              Outbound Bot (Outgoing Calls)
+              Giden Arama Asistanı (Outbound)
             </label>
             <select
               value={selectedOutboundBotId}
               onChange={(e) => setSelectedOutboundBotId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">No bot assigned</option>
+              <option value="">Asistan atanmadı</option>
               {bots.map((bot) => (
                 <option key={bot.id} value={bot.id}>
-                  {bot.name} {bot.isActive ? "" : "(Inactive)"}
+                  {bot.name} {bot.isActive ? "" : "(Pasif)"}
                 </option>
               ))}
             </select>
             <p className="text-xs text-gray-500 mt-1">
-              Bot that will be used when making outgoing calls from this number
+              Bu numaradan arama yaparken kullanılacak asistan
             </p>
           </div>
 
@@ -128,14 +128,14 @@ export default function BindBotDialog({ isOpen, onClose, numberId, currentInboun
               disabled={isLoading}
               className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              Cancel
+              İptal
             </button>
             <button
               type="submit"
               disabled={isLoading}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "Updating..." : "Update Bots"}
+              {isLoading ? "Güncelleniyor..." : "Güncelle"}
             </button>
           </div>
         </form>

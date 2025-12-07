@@ -73,15 +73,15 @@ export default function AssignBotDialog({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Assign Bot to User</DialogTitle>
+                    <DialogTitle>Kullanıcıya Asistan Ata</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label>Select Customer</Label>
+                        <Label>Müşteri Seç</Label>
                         <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a customer..." />
+                                <SelectValue placeholder="Bir müşteri seçin..." />
                             </SelectTrigger>
                             <SelectContent>
                                 {customers.map((customer) => (
@@ -102,14 +102,14 @@ export default function AssignBotDialog({
 
                 <DialogFooter>
                     <Button variant="outline" onClick={onClose}>
-                        Cancel
+                        İptal
                     </Button>
                     <Button
                         onClick={handleAssign}
                         disabled={!selectedUserId || isLoading}
                     >
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Assign
+                        Ata
                     </Button>
                 </DialogFooter>
             </DialogContent>

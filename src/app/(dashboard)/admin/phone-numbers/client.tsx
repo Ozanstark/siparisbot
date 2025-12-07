@@ -96,7 +96,7 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
   }
 
   const handleUnassign = async (numberId: string) => {
-    if (!confirm("Are you sure you want to unassign this number?")) return
+    if (!confirm("Bu numaranın atamasını kaldırmak istediğinize emin misiniz?")) return
     try {
       const response = await fetch(`/api/phone-numbers/${numberId}/assign`, {
         method: "DELETE"
@@ -135,8 +135,8 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
     <>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Phone Numbers</h1>
-          <p className="text-gray-600 mt-1">Manage your phone numbers for inbound and outbound calls</p>
+          <h1 className="text-3xl font-bold">Telefon Numaraları</h1>
+          <p className="text-gray-600 mt-1">Gelen ve giden aramalar için telefon numaralarınızı yönetin</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -144,19 +144,19 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
             disabled={isSyncing}
             className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
-            {isSyncing ? "Syncing..." : "Sync"}
+            {isSyncing ? "Senkronize ediliyor..." : "Senkronize Et"}
           </button>
           <button
             onClick={() => setShowImportDialog(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
-            Import Phone Number
+            Numara İçe Aktar
           </button>
           <button
             onClick={() => setShowPurchaseDialog(true)}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
           >
-            Purchase Number ($5/mo)
+            Numara Satın Al ($5/ay)
           </button>
         </div>
       </div>
@@ -170,30 +170,30 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
       {isLoading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          <p className="mt-4 text-gray-600">Loading phone numbers...</p>
+          <p className="mt-4 text-gray-600">Telefon numaraları yükleniyor...</p>
         </div>
       ) : phoneNumbers.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <p className="text-gray-600 mb-4">No phone numbers configured yet</p>
+          <p className="text-gray-600 mb-4">Henüz yapılandırılmış telefon numarası yok</p>
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => setShowImportDialog(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
-              Import Your First Number
+              İlk Numaranızı İçe Aktarın
             </button>
             <button
               onClick={() => setShowPurchaseDialog(true)}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
             >
-              Purchase a Number
+              Numara Satın Alın
             </button>
           </div>
         </div>
       ) : (
         <>
           <div className="mb-4 text-sm text-gray-600">
-            Total: {phoneNumbers.length} phone number{phoneNumbers.length !== 1 ? "s" : ""}
+            Toplam: {phoneNumbers.length} telefon numarası
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {phoneNumbers.map((phoneNumber) => (

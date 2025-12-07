@@ -24,7 +24,7 @@ export default function PhoneNumberCard({
   const dbData = phoneNumber.dbData
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete ${phoneNumber.phone_number_pretty || phoneNumber.phone_number}?`)) {
+    if (!confirm(`${phoneNumber.phone_number_pretty || phoneNumber.phone_number} numarasını silmek istediğinize emin misiniz?`)) {
       return
     }
 
@@ -63,8 +63,8 @@ export default function PhoneNumberCard({
         </div>
         <div className="flex gap-2">
           <span className={`px-2 py-1 text-xs rounded ${phoneNumber.phone_number_type === "retell-twilio"
-              ? "bg-blue-100 text-blue-700"
-              : "bg-green-100 text-green-700"
+            ? "bg-blue-100 text-blue-700"
+            : "bg-green-100 text-green-700"
             }`}>
             {phoneNumber.phone_number_type || "imported"}
           </span>
@@ -73,13 +73,13 @@ export default function PhoneNumberCard({
 
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-500">Area Code:</span>
-          <span className="font-medium">{phoneNumber.area_code || "N/A"}</span>
+          <span className="text-gray-500">Alan Kodu:</span>
+          <span className="font-medium">{phoneNumber.area_code || "Yok"}</span>
         </div>
 
         {phoneNumber.inbound_agent_id && (
           <div className="flex justify-between">
-            <span className="text-gray-500">Inbound Agent:</span>
+            <span className="text-gray-500">Gelen Arama Asistanı:</span>
             <span className="font-medium text-blue-600 truncate max-w-[200px]">
               {dbData?.boundAgent?.name || phoneNumber.inbound_agent_id}
             </span>
@@ -88,7 +88,7 @@ export default function PhoneNumberCard({
 
         {phoneNumber.outbound_agent_id && phoneNumber.outbound_agent_id !== phoneNumber.inbound_agent_id && (
           <div className="flex justify-between">
-            <span className="text-gray-500">Outbound Agent:</span>
+            <span className="text-gray-500">Giden Arama Asistanı:</span>
             <span className="font-medium text-blue-600 truncate max-w-[200px]">
               {phoneNumber.outbound_agent_id}
             </span>
@@ -97,7 +97,7 @@ export default function PhoneNumberCard({
 
         {dbData?.assignedTo && (
           <div className="flex justify-between">
-            <span className="text-gray-500">Assigned To:</span>
+            <span className="text-gray-500">Atanan Kişi:</span>
             <span className="font-medium">{dbData.assignedTo.name || dbData.assignedTo.email}</span>
           </div>
         )}
@@ -113,7 +113,7 @@ export default function PhoneNumberCard({
 
         {phoneNumber.last_modification_timestamp && (
           <div className="flex justify-between">
-            <span className="text-gray-500">Last Modified:</span>
+            <span className="text-gray-500">Son Düzenleme:</span>
             <span className="text-xs">
               {new Date(phoneNumber.last_modification_timestamp).toLocaleDateString()}
             </span>
@@ -128,14 +128,14 @@ export default function PhoneNumberCard({
               onClick={() => onUnassign?.(dbData.id)}
               className="flex-1 px-3 py-2 text-sm text-center bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-md hover:bg-yellow-100 transition-colors"
             >
-              Unassign User
+              Atamayı Kaldır
             </button>
           ) : (
             <button
               onClick={() => onAssign?.(dbData.id)}
               className="flex-1 px-3 py-2 text-sm text-center bg-gray-50 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
             >
-              Assign User
+              Kullanıcı Ata
             </button>
           )}
 
@@ -143,7 +143,7 @@ export default function PhoneNumberCard({
             onClick={() => onBindAgent?.(dbData.id)}
             className="flex-1 px-3 py-2 text-sm text-center bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
-            Bind Bot
+            Asistan Bağla
           </button>
 
           <button
@@ -151,7 +151,7 @@ export default function PhoneNumberCard({
             disabled={isDeleting}
             className="px-3 py-2 text-sm bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 transition-colors disabled:opacity-50"
           >
-            {isDeleting ? "..." : "Delete"}
+            {isDeleting ? "..." : "Sil"}
           </button>
         </div>
       )}

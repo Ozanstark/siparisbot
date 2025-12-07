@@ -31,17 +31,17 @@ export default async function DashboardLayout({
   const basePath = isAdmin ? "/admin" : "/customer"
 
   const navigation = [
-    { name: 'Bots', href: `${basePath}/bots`, icon: LayoutDashboard },
-    { name: 'Calls', href: `${basePath}/calls`, icon: Phone },
+    { name: 'Asistanlar', href: `${basePath}/bots`, icon: LayoutDashboard },
+    { name: 'Görüşmeler', href: `${basePath}/calls`, icon: Phone },
     // Show Orders for everyone (unified role) or conditional if needed
-    { name: 'Orders', href: `${basePath}/orders`, icon: FileText },
-    { name: 'Knowledge Bases', href: `${basePath}/knowledge-bases`, icon: BookOpen },
+    { name: 'Siparişler', href: `${basePath}/orders`, icon: FileText },
+    { name: 'Bilgi Bankası', href: `${basePath}/knowledge-bases`, icon: BookOpen },
   ]
 
   const adminNavigation = [
-    { name: 'Customers', href: `${basePath}/customers`, icon: Users },
-    { name: 'Phone Numbers', href: `${basePath}/phone-numbers`, icon: Phone },
-    { name: 'Settings', href: `${basePath}/settings`, icon: Settings },
+    { name: 'Müşteriler', href: `${basePath}/customers`, icon: Users },
+    { name: 'Telefon Numaraları', href: `${basePath}/phone-numbers`, icon: Phone },
+    { name: 'Ayarlar', href: `${basePath}/settings`, icon: Settings },
   ]
 
   const navItems = isAdmin ? [...navigation, ...adminNavigation] : navigation
@@ -98,7 +98,7 @@ export default async function DashboardLayout({
               className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
               <LogOut className="h-4 w-4" />
-              Sign Out
+              Çıkış Yap
             </button>
           </form>
         </div>
