@@ -54,10 +54,9 @@ export async function POST(req: NextRequest) {
 
         for (const phone of retellNumbers) {
             try {
-                const existingPhone = await prisma.phoneNumber.findFirst({
+                const existingPhone = await prisma.phoneNumber.findUnique({
                     where: {
-                        number: phone.phone_number,
-                        organizationId
+                        number: phone.phone_number
                     }
                 })
 
@@ -69,6 +68,7 @@ export async function POST(req: NextRequest) {
                     await prisma.phoneNumber.update({
                         where: { id: existingPhone.id },
                         data: {
+                            organizationId, // Claim ownership if it was different
                             retellPhoneNumberId: phone.phone_number,
                             inboundAgentId: localInboundId || null,
                             outboundAgentId: localOutboundId || null,
@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
                             updatedAt: new Date()
                         }
                     })
+                    results.updated++
                     results.updated++
                 } else {
                     await prisma.phoneNumber.create({
