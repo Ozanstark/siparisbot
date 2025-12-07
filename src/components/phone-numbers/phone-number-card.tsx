@@ -1,16 +1,24 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 
 interface PhoneNumberCardProps {
   phoneNumber: any
   isAdmin: boolean
   onUpdate?: () => void
+  onAssign?: (id: string) => void
+  onUnassign?: (id: string) => void
+  onBindAgent?: (id: string) => void
 }
 
-export default function PhoneNumberCard({ phoneNumber, isAdmin, onUpdate }: PhoneNumberCardProps) {
-  const [isEditing, setIsEditing] = useState(false)
+export default function PhoneNumberCard({
+  phoneNumber,
+  isAdmin,
+  onUpdate,
+  onAssign,
+  onUnassign,
+  onBindAgent
+}: PhoneNumberCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const dbData = phoneNumber.dbData
@@ -54,11 +62,10 @@ export default function PhoneNumberCard({ phoneNumber, isAdmin, onUpdate }: Phon
           )}
         </div>
         <div className="flex gap-2">
-          <span className={`px-2 py-1 text-xs rounded ${
-            phoneNumber.phone_number_type === "retell-twilio"
+          <span className={`px-2 py-1 text-xs rounded ${phoneNumber.phone_number_type === "retell-twilio"
               ? "bg-blue-100 text-blue-700"
               : "bg-green-100 text-green-700"
-          }`}>
+            }`}>
             {phoneNumber.phone_number_type || "imported"}
           </span>
         </div>
@@ -116,18 +123,29 @@ export default function PhoneNumberCard({ phoneNumber, isAdmin, onUpdate }: Phon
 
       {isAdmin && dbData && (
         <div className="flex gap-2 mt-4 pt-4 border-t">
-          <Link
-            href={`/admin/phone-numbers/${dbData.id}`}
-            className="flex-1 px-3 py-2 text-sm text-center border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            View Details
-          </Link>
-          <Link
-            href={`/admin/phone-numbers/${dbData.id}/edit`}
+          {dbData.assignedTo ? (
+            <button
+              onClick={() => onUnassign?.(dbData.id)}
+              className="flex-1 px-3 py-2 text-sm text-center bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-md hover:bg-yellow-100 transition-colors"
+            >
+              Unassign User
+            </button>
+          ) : (
+            <button
+              onClick={() => onAssign?.(dbData.id)}
+              className="flex-1 px-3 py-2 text-sm text-center bg-gray-50 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+            >
+              Assign User
+            </button>
+          )}
+
+          <button
+            onClick={() => onBindAgent?.(dbData.id)}
             className="flex-1 px-3 py-2 text-sm text-center bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
-            Edit
-          </Link>
+            Bind Bot
+          </button>
+
           <button
             onClick={handleDelete}
             disabled={isDeleting}

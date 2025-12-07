@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import PhoneNumberCard from "@/components/phone-numbers/phone-number-card"
 import ImportPhoneDialog from "@/components/phone-numbers/import-phone-dialog"
 import PurchasePhoneDialog from "@/components/phone-numbers/purchase-phone-dialog"
+import AssignNumberDialog from "@/components/numbers/assign-number-dialog"
+import BindBotDialog from "@/components/numbers/bind-bot-dialog"
 
 interface PhoneNumbersClientProps {
   hasApiKey: boolean
@@ -16,6 +18,21 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+
+  // Dialog states for Assign/Bind
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
+  const [isBindBotDialogOpen, setIsBindBotDialogOpen] = useState(false)
+  const [selectedNumberId, setSelectedNumberId] = useState<string | null>(null)
+  const [selectedNumber, setSelectedNumber] = useState<any | null>(null)
+  const [customers, setCustomers] = useState<any[]>([])
+
+  useEffect(() => {
+    // Load customers for assignment dialog
+    fetch("/api/admin/customers")
+      .then(res => res.json())
+      .then(data => setCustomers(data.customers || []))
+      .catch(err => console.error("Failed to load customers", err))
+  }, [])
 
   const handleSync = async () => {
     setIsSyncing(true)
@@ -59,7 +76,35 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
   const handleDialogClose = () => {
     setShowImportDialog(false)
     setShowPurchaseDialog(false)
+    setIsAssignDialogOpen(false)
+    setIsBindBotDialogOpen(false)
+    setSelectedNumberId(null)
+    setSelectedNumber(null)
     loadPhoneNumbers()
+  }
+
+  const handleAssign = (numberId: string) => {
+    setSelectedNumberId(numberId)
+    setIsAssignDialogOpen(true)
+  }
+
+  const handleBindAgent = (numberId: string) => {
+    const number = phoneNumbers.find(n => n.dbData?.id === numberId)
+    setSelectedNumber(number)
+    setSelectedNumberId(numberId)
+    setIsBindBotDialogOpen(true)
+  }
+
+  const handleUnassign = async (numberId: string) => {
+    if (!confirm("Are you sure you want to unassign this number?")) return
+    try {
+      const response = await fetch(`/api/phone-numbers/${numberId}/assign`, {
+        method: "DELETE"
+      })
+      if (response.ok) loadPhoneNumbers()
+    } catch (error) {
+      console.error("Error unassigning number:", error)
+    }
   }
 
   if (!hasApiKey) {
@@ -157,6 +202,9 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
                 phoneNumber={phoneNumber}
                 isAdmin={true}
                 onUpdate={loadPhoneNumbers}
+                onAssign={handleAssign}
+                onUnassign={handleUnassign}
+                onBindAgent={handleBindAgent}
               />
             ))}
           </div>
@@ -171,6 +219,21 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
       <PurchasePhoneDialog
         isOpen={showPurchaseDialog}
         onClose={handleDialogClose}
+      />
+
+      <AssignNumberDialog
+        isOpen={isAssignDialogOpen}
+        onClose={handleDialogClose}
+        numberId={selectedNumberId}
+        customers={customers}
+      />
+
+      <BindBotDialog
+        isOpen={isBindBotDialogOpen}
+        onClose={handleDialogClose}
+        numberId={selectedNumberId}
+        currentInboundBotId={selectedNumber?.dbData?.inboundAgentId}
+        currentOutboundBotId={selectedNumber?.dbData?.outboundAgentId}
       />
     </>
   )
