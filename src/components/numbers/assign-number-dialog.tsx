@@ -29,7 +29,7 @@ export default function AssignNumberDialog({
     setError(null)
 
     try {
-      const response = await fetch(`/api/numbers/${numberId}/assign`, {
+      const response = await fetch(`/api/phone-numbers/${numberId}/assign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: selectedCustomerId }),

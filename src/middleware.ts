@@ -31,7 +31,7 @@ export const config = {
     "/customer/:path*",
     "/api/bots/:path*",
     "/api/calls/:path*",
-    "/api/numbers/:path*",
+    "/api/phone-numbers/:path*",
     "/api/analytics/:path*",
   ],
 }

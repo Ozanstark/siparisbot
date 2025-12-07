@@ -46,7 +46,7 @@ export default function AddNumberDialog({ isOpen, onClose }: AddNumberDialogProp
 
     try {
       const body = action === "purchase" ? purchaseData : importData
-      const response = await fetch(`/api/numbers?action=${action}`, {
+      const response = await fetch(`/api/phone-numbers?action=${action}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -88,22 +88,20 @@ export default function AddNumberDialog({ isOpen, onClose }: AddNumberDialogProp
           <button
             type="button"
             onClick={() => setAction("purchase")}
-            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-              action === "purchase"
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${action === "purchase"
                 ? "bg-white text-blue-600 shadow"
                 : "text-gray-600 hover:text-gray-900"
-            }`}
+              }`}
           >
             Purchase from Retell
           </button>
           <button
             type="button"
             onClick={() => setAction("import")}
-            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-              action === "import"
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${action === "import"
                 ? "bg-white text-blue-600 shadow"
                 : "text-gray-600 hover:text-gray-900"
-            }`}
+              }`}
           >
             Import Existing
           </button>
