@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
 
   try {
     // If admin requests sync, fetch from Retell and update database
-    if (sync && role === "ADMIN") {
+    // Sync logic deprecated. Use /api/phone-numbers/sync instead.
+    if (false && sync && role === "ADMIN") {
       try {
         // Get organization API key
         const organization = await prisma.organization.findUnique({
