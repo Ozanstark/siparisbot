@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import BotForm from "@/components/bots/bot-form"
 
+export const dynamic = "force-dynamic"
+
 export default async function NewBotPage() {
   const session = await getServerSession(authOptions)
 

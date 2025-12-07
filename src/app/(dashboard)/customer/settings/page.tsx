@@ -9,6 +9,8 @@ import { Slider } from "@/components/ui/slider"
 import { Bell, Volume2, Save } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
+export const dynamic = "force-dynamic"
+
 interface NotificationSettings {
   soundEnabled: boolean
   soundVolume: number

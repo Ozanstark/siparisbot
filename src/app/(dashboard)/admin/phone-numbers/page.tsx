@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import PhoneNumbersClient from "./client"
 
+export const dynamic = "force-dynamic"
+
 export default async function AdminPhoneNumbersPage() {
   const session = await getServerSession(authOptions)
 

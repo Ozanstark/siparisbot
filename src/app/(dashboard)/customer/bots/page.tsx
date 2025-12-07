@@ -5,6 +5,8 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import BotList from "@/components/bots/bot-list"
 
+export const dynamic = "force-dynamic"
+
 export default async function CustomerBotsPage() {
   const session = await getServerSession(authOptions)
 

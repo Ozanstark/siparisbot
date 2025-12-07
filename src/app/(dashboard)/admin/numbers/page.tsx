@@ -8,6 +8,8 @@ import AddNumberDialog from "@/components/numbers/add-number-dialog"
 import AssignNumberDialog from "@/components/numbers/assign-number-dialog"
 import BindBotDialog from "@/components/numbers/bind-bot-dialog"
 
+export const dynamic = "force-dynamic"
+
 export default function AdminNumbersPage() {
   const { data: session, status } = useSession()
   const [numbers, setNumbers] = useState<any[]>([])

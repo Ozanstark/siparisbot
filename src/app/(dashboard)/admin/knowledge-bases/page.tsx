@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Plus, Trash2, Edit, Database, FileText } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 interface KnowledgeBase {
   id: string
   name: string

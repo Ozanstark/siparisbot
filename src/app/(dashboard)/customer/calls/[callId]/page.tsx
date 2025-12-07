@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma"
 import { formatDate, formatDuration } from "@/lib/utils"
 import CallRecordingPlayer from "@/components/calls/call-recording-player"
 
+export const dynamic = "force-dynamic"
+
 export default async function CallDetailsPage({
   params,
 }: {

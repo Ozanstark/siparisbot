@@ -9,6 +9,8 @@ import WebCallInterface from "@/components/calls/web-call-interface"
 import ActiveCallsDashboard from "@/components/calls/active-calls-dashboard"
 import BatchCallUpload from "@/components/calls/batch-call-upload"
 
+export const dynamic = "force-dynamic"
+
 export default function CustomerCallsPage() {
   const { data: session, status } = useSession()
   const [calls, setCalls] = useState<any[]>([])

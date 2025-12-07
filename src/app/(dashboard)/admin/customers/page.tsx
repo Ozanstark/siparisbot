@@ -6,6 +6,8 @@ import { redirect } from "next/navigation"
 import CustomerCard from "@/components/customers/customer-card"
 import AddCustomerDialog from "@/components/customers/add-customer-dialog"
 
+export const dynamic = "force-dynamic"
+
 export default function AdminCustomersPage() {
   const { data: session, status } = useSession()
   const [customers, setCustomers] = useState<any[]>([])

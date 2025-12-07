@@ -5,6 +5,8 @@ import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Phone, ArrowRight, Loader2 } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")

@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import BotList from "@/components/bots/bot-list"
 import AdminBotsHeader from "@/components/bots/admin-bots-header"
 
+export const dynamic = "force-dynamic"
+
 export default async function AdminBotsPage() {
   const session = await getServerSession(authOptions)
 

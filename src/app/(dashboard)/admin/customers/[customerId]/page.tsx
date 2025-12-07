@@ -5,6 +5,8 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { formatDate, formatDuration } from "@/lib/utils"
 
+export const dynamic = "force-dynamic"
+
 export default async function CustomerDetailsPage({
   params,
 }: {

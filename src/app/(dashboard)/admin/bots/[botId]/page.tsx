@@ -9,6 +9,8 @@ import KBAssignmentSection from "@/components/bots/kb-assignment-section"
 import ToolManagementSection from "@/components/bots/tool-management-section"
 import DeleteBotButton from "@/components/bots/delete-bot-button"
 
+export const dynamic = "force-dynamic"
+
 export default async function BotDetailsPage({
   params,
 }: {

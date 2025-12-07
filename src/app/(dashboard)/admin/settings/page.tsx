@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 
+export const dynamic = "force-dynamic"
+
 export default function AdminSettingsPage() {
   const { data: session, status } = useSession()
   const [settings, setSettings] = useState<any>(null)

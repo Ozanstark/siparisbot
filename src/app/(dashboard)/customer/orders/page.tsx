@@ -7,6 +7,8 @@ import { Button } from "../../../../components/ui/button"
 import { Badge } from "../../../../components/ui/badge"
 import { Bell, Check, X, Clock, ChefHat, Eye, Settings } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 type OrderStatus = "PENDING" | "PREPARING" | "READY" | "COMPLETED" | "CANCELLED"
 
 interface Order {

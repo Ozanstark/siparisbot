@@ -7,6 +7,8 @@ import { formatDate, formatDuration } from "@/lib/utils"
 import KBAssignmentSection from "@/components/bots/kb-assignment-section"
 import ToolManagementSection from "@/components/bots/tool-management-section"
 
+export const dynamic = "force-dynamic"
+
 export default async function CustomerBotDetailsPage({
   params,
 }: {
