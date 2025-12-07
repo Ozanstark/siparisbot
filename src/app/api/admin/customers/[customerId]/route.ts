@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+export const dynamic = "force-dynamic"
+
 // GET /api/admin/customers/[customerId] - Get customer details
 export async function GET(
   req: NextRequest,
