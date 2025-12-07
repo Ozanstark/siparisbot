@@ -20,21 +20,21 @@ export default function CustomerCard({ customer, onDelete }: CustomerCardProps) 
           <p className="text-sm text-gray-600 mt-1">{customer.email}</p>
         </div>
         <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
-          Customer
+          Müşteri
         </span>
       </div>
 
       <div className="space-y-2 text-sm text-gray-600 mb-4">
         <div className="flex justify-between">
-          <span>Assigned Bots:</span>
+          <span>Atanan Asistanlar:</span>
           <span className="font-medium">{customer.assignedBotsCount || 0}</span>
         </div>
         <div className="flex justify-between">
-          <span>Total Calls:</span>
+          <span>Toplam Görüşme:</span>
           <span className="font-medium">{customer.callsCount || 0}</span>
         </div>
         <div className="flex justify-between">
-          <span>Joined:</span>
+          <span>Kayıt Tarihi:</span>
           <span className="font-medium">
             {new Date(customer.createdAt).toLocaleDateString()}
           </span>
@@ -46,13 +46,13 @@ export default function CustomerCard({ customer, onDelete }: CustomerCardProps) 
           href={`/admin/customers/${customer.id}`}
           className="flex-1 text-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
         >
-          View Details
+          Detaylar
         </Link>
         <button
           onClick={() => onDelete?.(customer.id)}
           className="px-4 py-2 border border-red-300 text-red-600 rounded hover:bg-red-50 transition-colors"
         >
-          Delete
+          Sil
         </button>
       </div>
     </div>

@@ -41,7 +41,7 @@ export default function AdminCustomersPage() {
   }
 
   const handleDelete = async (customerId: string) => {
-    if (!confirm("Are you sure you want to delete this customer? This will also delete all their data.")) {
+    if (!confirm("Bu müşteriyi silmek istediğinize emin misiniz? Tüm verileri silinecektir.")) {
       return
     }
 
@@ -70,21 +70,21 @@ export default function AdminCustomersPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Customers</h1>
-          <p className="text-gray-600 mt-1">Manage customer accounts</p>
+          <h1 className="text-3xl font-bold">Müşteriler</h1>
+          <p className="text-gray-600 mt-1">Müşteri hesaplarını yönetin</p>
         </div>
         <button
           onClick={() => setIsDialogOpen(true)}
           className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
         >
-          + Create Customer
+          + Müşteri Oluştur
         </button>
       </div>
 
       {customers.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg mb-4">No customers yet</p>
-          <p className="text-gray-400">Create your first customer account to get started</p>
+          <p className="text-gray-500 text-lg mb-4">Henüz müşteri yok</p>
+          <p className="text-gray-400">Başlamak için ilk müşterinizi oluşturun</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

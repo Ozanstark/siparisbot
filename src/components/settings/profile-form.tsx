@@ -32,17 +32,17 @@ export default function ProfileForm() {
         // Basic Validation
         if (formData.newPassword) {
             if (formData.newPassword !== formData.confirmPassword) {
-                setError("New passwords do not match")
+                setError("Yeni şifreler eşleşmiyor")
                 setIsLoading(false)
                 return
             }
             if (formData.newPassword.length < 6) {
-                setError("Password must be at least 6 characters")
+                setError("Şifre en az 6 karakter olmalı")
                 setIsLoading(false)
                 return
             }
             if (!formData.currentPassword) {
-                setError("Current password is required to set a new password")
+                setError("Yeni şifre belirlemek için mevcut şifrenizi girmelisiniz")
                 setIsLoading(false)
                 return
             }
@@ -65,7 +65,7 @@ export default function ProfileForm() {
                 throw new Error(data.error || "Failed to update profile")
             }
 
-            setSuccess("Profile updated successfully")
+            setSuccess("Profil başarıyla güncellendi")
 
             // Clear password fields
             setFormData(prev => ({
@@ -87,7 +87,7 @@ export default function ProfileForm() {
 
     return (
         <div className="bg-white border rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Profile Settings</h2>
+            <h2 className="text-xl font-semibold mb-4">Profil Ayarları</h2>
 
             {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-6 text-sm">
@@ -104,62 +104,62 @@ export default function ProfileForm() {
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Email - Read Only */}
                 <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Email Address</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">E-posta Adresi</label>
                     <input
                         type="email"
                         value={session?.user?.email || ""}
                         disabled
                         className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-500 text-sm"
                     />
-                    <p className="text-xs text-gray-400 mt-1">Email cannot be changed.</p>
+                    <p className="text-xs text-gray-400 mt-1">E-posta adresi değiştirilemez.</p>
                 </div>
 
                 {/* Name */}
                 <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Full Name</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Ad Soyad</label>
                     <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        placeholder="Your Name"
+                        placeholder="Adınız Soyadınız"
                     />
                 </div>
 
                 <div className="border-t border-gray-100 my-6 pt-6">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-4">Change Password</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4">Şifre Değiştir</h3>
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1 text-gray-700">Current Password</label>
+                            <label className="block text-sm font-medium mb-1 text-gray-700">Mevcut Şifre</label>
                             <input
                                 type="password"
                                 value={formData.currentPassword}
                                 onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                                placeholder="Required to change password"
+                                placeholder="Şifre değiştirmek için gerekli"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">New Password</label>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">Yeni Şifre</label>
                                 <input
                                     type="password"
                                     value={formData.newPassword}
                                     onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                                    placeholder="Min. 6 characters"
+                                    placeholder="En az 6 karakter"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Confirm New Password</label>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">Yeni Şifreyi Onayla</label>
                                 <input
                                     type="password"
                                     value={formData.confirmPassword}
                                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                                    placeholder="Confirm new password"
+                                    placeholder="Yeni şifreyi tekrar girin"
                                 />
                             </div>
                         </div>
@@ -172,7 +172,7 @@ export default function ProfileForm() {
                         disabled={isLoading}
                         className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm disabled:opacity-50"
                     >
-                        {isLoading ? "Saving..." : "Save Changes"}
+                        {isLoading ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
                     </button>
                 </div>
             </form>
