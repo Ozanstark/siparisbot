@@ -15,6 +15,20 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
   const [error, setError] = useState<string | null>(null)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  const handleSync = async () => {
+    setIsSyncing(true)
+    try {
+      const res = await fetch("/api/phone-numbers/sync", { method: "POST" })
+      if (!res.ok) throw new Error("Sync failed")
+      await loadPhoneNumbers()
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   const loadPhoneNumbers = async () => {
     setIsLoading(true)
@@ -80,6 +94,13 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
           <p className="text-gray-600 mt-1">Manage your phone numbers for inbound and outbound calls</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors disabled:opacity-50"
+          >
+            {isSyncing ? "Syncing..." : "Sync"}
+          </button>
           <button
             onClick={() => setShowImportDialog(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
