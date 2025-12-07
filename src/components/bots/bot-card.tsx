@@ -27,12 +27,14 @@ interface BotCardProps {
       }
     }>
   }
-  isAdmin?: boolean
+  onAssign?: (id: string) => void
+  onUnassign?: (botId: string, userId: string) => void
 }
 
-export default function BotCard({ bot, isAdmin }: BotCardProps) {
+export default function BotCard({ bot, isAdmin, onAssign, onUnassign }: BotCardProps) {
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isUnassigning, setIsUnassigning] = useState<string | null>(null)
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -58,6 +60,18 @@ export default function BotCard({ bot, isAdmin }: BotCardProps) {
       setIsDeleting(false)
     }
   }
+
+  const handleUnassign = async (userId: string) => {
+    if (!confirm("Are you sure you want to unassign this bot from the user?")) return
+
+    setIsUnassigning(userId)
+    try {
+      await onUnassign?.(bot.id, userId)
+    } finally {
+      setIsUnassigning(null)
+    }
+  }
+
   return (
     <Card className="hover:scale-[1.02] transition-all duration-300">
       <CardHeader className="pb-3">
@@ -89,15 +103,28 @@ export default function BotCard({ bot, isAdmin }: BotCardProps) {
             <span className="font-medium">{bot._count.calls}</span>
           </div>
         )}
-        {isAdmin && bot.assignments && (
-          <div className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
-            <span className="text-muted-foreground">Assigned To</span>
-            <span className="font-medium">{bot.assignments.length} assignments</span>
+        {isAdmin && bot.assignments && bot.assignments.length > 0 && (
+          <div className="py-2 border-t mt-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">Assigned To</span>
+            <div className="space-y-1">
+              {bot.assignments.map((assignment) => (
+                <div key={assignment.user.id} className="flex justify-between items-center bg-gray-50 px-2 py-1 rounded text-xs">
+                  <span>{assignment.user.name || assignment.user.email}</span>
+                  <button
+                    onClick={() => handleUnassign(assignment.user.id)}
+                    disabled={isUnassigning === assignment.user.id}
+                    className="text-red-500 hover:text-red-700 ml-2"
+                  >
+                    {isUnassigning === assignment.user.id ? "..." : "×"}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </CardContent>
 
-      <CardFooter className="pt-3 gap-2">
+      <CardFooter className="pt-3 gap-2 flex-wrap">
         <Link
           href={isAdmin ? `/admin/bots/${bot.id}` : `/customer/bots/${bot.id}`}
           className="flex-1"
@@ -114,15 +141,24 @@ export default function BotCard({ bot, isAdmin }: BotCardProps) {
           </Button>
         </Link>
         {isAdmin && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="text-muted-foreground hover:text-red-600 hover:bg-red-50"
-          >
-            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              onClick={() => onAssign?.(bot.id)}
+              className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
+            >
+              Assign
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="text-muted-foreground hover:text-red-600 hover:bg-red-50"
+            >
+              {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            </Button>
+          </>
         )}
       </CardFooter>
     </Card>
