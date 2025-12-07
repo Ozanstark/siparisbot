@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { z } from "zod"
 
+export const dynamic = "force-dynamic"
+
 const createKnowledgeBaseSchema = z.object({
   name: z.string().min(1).max(100),
   texts: z.array(z.string()).min(1, "At least one text chunk is required"),
