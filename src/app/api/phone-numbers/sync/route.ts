@@ -41,8 +41,16 @@ export async function POST(req: NextRequest) {
         const results = {
             created: 0,
             updated: 0,
-            skipped: 0
+            skipped: 0,
+            errors: [] as string[]
         }
+
+        // Create a map of Retell Agent ID -> Local Bot ID
+        const bots = await prisma.bot.findMany({
+            where: { organizationId },
+            select: { id: true, retellAgentId: true }
+        })
+        const agentMap = new Map(bots.map(b => [b.retellAgentId, b.id]))
 
         for (const phone of retellNumbers) {
             try {
@@ -53,13 +61,17 @@ export async function POST(req: NextRequest) {
                     }
                 })
 
+                // Resolve local bot IDs
+                const localInboundId = phone.inbound_agent_id ? agentMap.get(phone.inbound_agent_id) : null
+                const localOutboundId = phone.outbound_agent_id ? agentMap.get(phone.outbound_agent_id) : null
+
                 if (existingPhone) {
                     await prisma.phoneNumber.update({
                         where: { id: existingPhone.id },
                         data: {
                             retellPhoneNumberId: phone.phone_number,
-                            inboundAgentId: phone.inbound_agent_id || null,
-                            outboundAgentId: phone.outbound_agent_id || null,
+                            inboundAgentId: localInboundId || null,
+                            outboundAgentId: localOutboundId || null,
                             nickname: phone.nickname || existingPhone.nickname,
                             updatedAt: new Date()
                         }
@@ -71,16 +83,17 @@ export async function POST(req: NextRequest) {
                             number: phone.phone_number,
                             retellPhoneNumberId: phone.phone_number,
                             organizationId,
-                            inboundAgentId: phone.inbound_agent_id || null,
-                            outboundAgentId: phone.outbound_agent_id || null,
+                            inboundAgentId: localInboundId || null,
+                            outboundAgentId: localOutboundId || null,
                             nickname: phone.nickname || null,
                             isActive: true
                         }
                     })
                     results.created++
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error(`Error processing number ${phone.phone_number}:`, error)
+                results.errors.push(`${phone.phone_number}: ${error.message}`)
                 results.skipped++
             }
         }
