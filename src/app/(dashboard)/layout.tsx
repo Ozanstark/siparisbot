@@ -3,8 +3,6 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import {
-export const dynamic = "force-dynamic"
-
   LayoutDashboard,
   Phone,
   FileText,
@@ -15,6 +13,8 @@ export const dynamic = "force-dynamic"
   Menu,
   X
 } from "lucide-react"
+
+export const dynamic = "force-dynamic"
 
 export default async function DashboardLayout({
   children,
