@@ -371,44 +371,51 @@ async function handleCallAnalyzed(
 
     // Create order or reservation based on customer type and analysis data
     if (call && customAnalysisData) {
-      // Support both flat structure (simpler for dashboard) and nested 'order' object
-      const data = customAnalysisData.order || customAnalysisData
       const customerType = call.initiatedBy.customerType
 
       // Create order for restaurant (or default if no customerType)
-      if ((customerType === "RESTAURANT" || !customerType) && (data.items || data.customer_name)) {
-        await tx.order.create({
-          data: {
-            customerId: call.initiatedById,
-            callId: callId,
-            customerName: data.customer_name || "Unknown",
-            customerPhone: data.phone || callData.from_number || call.fromNumber,
-            items: data.items || transcript || "No items specified",
-            totalAmount: data.total_amount ? parseFloat(data.total_amount) : null,
-            deliveryAddress: data.delivery_address || null,
-            notes: data.notes || null,
-            status: "PENDING"
-          }
-        })
-        console.log(`✓ Created order for call ${callId} (customer type: ${customerType || 'not set'})`)
-      } else if (customerType === "HOTEL" && customAnalysisData.reservation) {
-        // Create reservation for hotel
-        await tx.reservation.create({
-          data: {
-            customerId: call.initiatedById,
-            callId: callId,
-            guestName: customAnalysisData.reservation.guest_name || "Unknown",
-            guestPhone: callData.from_number || call.fromNumber,
-            guestEmail: customAnalysisData.reservation.guest_email || null,
-            checkIn: customAnalysisData.reservation.check_in ? new Date(customAnalysisData.reservation.check_in) : new Date(),
-            checkOut: customAnalysisData.reservation.check_out ? new Date(customAnalysisData.reservation.check_out) : new Date(),
-            roomType: customAnalysisData.reservation.room_type || null,
-            numberOfGuests: customAnalysisData.reservation.number_of_guests || 1,
-            specialRequests: customAnalysisData.reservation.special_requests || null,
-            status: "PENDING"
-          }
-        })
-        console.log(`✓ Created reservation for call ${callId}`)
+      if (customerType === "RESTAURANT" || !customerType) {
+        // Support both nested 'order' object and flat structure
+        const orderData = customAnalysisData.order || customAnalysisData
+
+        if (orderData.items || orderData.customer_name) {
+          await tx.order.create({
+            data: {
+              customerId: call.initiatedById,
+              callId: callId,
+              customerName: orderData.customer_name || "Unknown",
+              customerPhone: orderData.phone || callData.from_number || call.fromNumber,
+              items: orderData.items || transcript || "No items specified",
+              totalAmount: orderData.total_amount ? parseFloat(orderData.total_amount) : null,
+              deliveryAddress: orderData.delivery_address || null,
+              notes: orderData.notes || null,
+              status: "PENDING"
+            }
+          })
+          console.log(`✓ Created order for call ${callId} (customer type: ${customerType || 'not set'})`)
+        }
+      } else if (customerType === "HOTEL") {
+        // Support both nested 'reservation' object and flat structure
+        const reservationData = customAnalysisData.reservation || customAnalysisData
+
+        if (reservationData.guest_name || reservationData.check_in) {
+          await tx.reservation.create({
+            data: {
+              customerId: call.initiatedById,
+              callId: callId,
+              guestName: reservationData.guest_name || "Unknown",
+              guestPhone: callData.from_number || call.fromNumber,
+              guestEmail: reservationData.guest_email || null,
+              checkIn: reservationData.check_in ? new Date(reservationData.check_in) : new Date(),
+              checkOut: reservationData.check_out ? new Date(reservationData.check_out) : new Date(),
+              roomType: reservationData.room_type || null,
+              numberOfGuests: reservationData.number_of_guests || 1,
+              specialRequests: reservationData.special_requests || null,
+              status: "PENDING"
+            }
+          })
+          console.log(`✓ Created reservation for call ${callId}`)
+        }
       }
     }
 
