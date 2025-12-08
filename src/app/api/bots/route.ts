@@ -79,6 +79,20 @@ export async function POST(req: NextRequest) {
 
     if (session.user.customerType === "HOTEL") {
       llmPayload.general_tools = [CHECK_AVAILABILITY_TOOL, CREATE_RESERVATION_TOOL]
+
+      // Auto-inject safety protocol
+      const safetyProtocol = `\n\n## RESERVATION PROTOCOL (STRICT)\nBefore calling 'create_reservation', you MUST verbally confirm the details with the user: "So I have a request for [Guest Name] for [Room Type] from [Check-in] to [Check-out]. Is this correct?". Only proceed if they say YES.`
+
+      if (llmPayload.general_prompt) {
+        llmPayload.general_prompt += safetyProtocol
+      }
+    } else if (session.user.customerType === "RESTAURANT") {
+      // Auto-inject safety protocol for Orders
+      const safetyProtocol = `\n\n## ORDER PROTOCOL (STRICT)\nBefore confirming an order, you MUST verbally confirm the details with the user: "So I have an order for [Items] to be delivered to [Address]. Is this correct?". Only proceed if they say YES.`
+
+      if (llmPayload.general_prompt) {
+        llmPayload.general_prompt += safetyProtocol
+      }
     }
 
     const llm = await callRetellApi("POST", "/create-retell-llm", llmPayload, organizationId) as any

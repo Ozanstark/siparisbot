@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { z } from "zod"
 
 export const dynamic = "force-dynamic"
@@ -10,7 +11,7 @@ const reservationSchema = z.object({
     guests: z.number().min(1),
     roomType: z.string(),
     guestName: z.string().min(2),
-    guestPhone: z.string().min(5),
+    guestPhone: z.string().optional(), // Made optional
     specialRequests: z.string().optional()
 })
 
@@ -49,6 +50,8 @@ export async function POST(req: NextRequest) {
         let roomTypeId: string | null = null
         let customerId: string | null = null
 
+        let guestPhone = data.guestPhone // Mutable variable
+
         if (agentId) {
             const bot = await prisma.bot.findUnique({
                 where: { retellAgentId: agentId },
@@ -56,6 +59,17 @@ export async function POST(req: NextRequest) {
             })
 
             if (bot) {
+                // Feature: Auto-detect phone number from Call ID if not provided
+                if (!guestPhone && body.call_id) {
+                    try {
+                        // Use raw API to ensure robust fetching
+                        const call = await callRetellApi("GET", `/get-call/${body.call_id}`, null, bot.organizationId)
+                        guestPhone = call.from_number
+                    } catch (err) {
+                        console.warn("Could not retrieve call details for phone number:", err)
+                    }
+                }
+
                 // Find room type in this organization
                 const room = await prisma.roomType.findFirst({
                     where: {
@@ -87,7 +101,7 @@ export async function POST(req: NextRequest) {
                 customerId: customerId,
                 callId: body.call_id || "manual-" + Date.now(), // Link to call if possible
                 guestName: data.guestName,
-                guestPhone: data.guestPhone,
+                guestPhone: guestPhone || "Unknown", // Fallback if still missing
                 checkIn: new Date(data.checkIn),
                 checkOut: new Date(data.checkOut),
                 numberOfGuests: data.guests,

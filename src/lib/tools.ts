@@ -32,7 +32,7 @@ export const CREATE_RESERVATION_TOOL = {
     type: "function",
     function: {
         name: "create_reservation",
-        description: "Create a new hotel reservation when the customer confirms they want to book. You MUST have checked availability first. You MUST collect guest name and phone number before calling this.",
+        description: "Create a new hotel reservation. CRITICAL: You MUST have checked availability first. You MUST have verbally confirmed all details (dates, room, name) with the user and received a clear 'YES' before using this tool.",
         parameters: {
             type: "object",
             properties: {
@@ -58,14 +58,14 @@ export const CREATE_RESERVATION_TOOL = {
                 },
                 guestPhone: {
                     type: "string",
-                    description: "Contact phone number of the guest."
+                    description: "Contact phone number of the guest. If not provided, the system will attempt to use the caller's phone number."
                 },
                 specialRequests: {
                     type: "string",
                     description: "Any special requests (e.g. 'Late check-in', 'High floor'). Optional."
                 }
             },
-            required: ["checkIn", "checkOut", "guests", "guestName", "guestPhone", "roomType"]
+            required: ["checkIn", "checkOut", "guests", "guestName", "roomType"]
         }
     }
 }

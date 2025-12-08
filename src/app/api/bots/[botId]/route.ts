@@ -199,6 +199,17 @@ export async function PUT(
 
       if (session.user.customerType === "HOTEL") {
         llmUpdateData.general_tools = finalTools
+
+        // Auto-inject safety protocol if prompt is being updated
+        if (llmUpdateData.general_prompt) {
+          const safetyProtocol = `\n\n## RESERVATION PROTOCOL (STRICT)\nBefore calling 'create_reservation', you MUST verbally confirm the details with the user: "So I have a request for [Guest Name] for [Room Type] from [Check-in] to [Check-out]. Is this correct?". Only proceed if they say YES.`
+          llmUpdateData.general_prompt += safetyProtocol
+        }
+      } else if (session.user.customerType === "RESTAURANT") {
+        if (llmUpdateData.general_prompt) {
+          const safetyProtocol = `\n\n## ORDER PROTOCOL (STRICT)\nBefore confirming an order, you MUST verbally confirm the details with the user: "So I have an order for [Items] to be delivered to [Address]. Is this correct?". Only proceed if they say YES.`
+          llmUpdateData.general_prompt += safetyProtocol
+        }
       }
 
       const llmResponse = await fetch(`https://api.retellai.com/update-retell-llm/${existingBot.retellLlmId}`, {
