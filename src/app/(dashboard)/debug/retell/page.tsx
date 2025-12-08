@@ -8,6 +8,8 @@ export default function RetellDebugPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [fixing, setFixing] = useState(false)
+  const [fixResult, setFixResult] = useState<any>(null)
 
   useEffect(() => {
     fetchDebugData()
@@ -27,6 +29,24 @@ export default function RetellDebugPage() {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fixWebhooks = async () => {
+    setFixing(true)
+    setFixResult(null)
+    try {
+      const response = await fetch("/api/admin/bots/fix-webhooks", { method: "POST" })
+      const result = await response.json()
+      setFixResult(result)
+      if (result.success) {
+        // Refresh data after fixing
+        setTimeout(() => fetchDebugData(), 2000)
+      }
+    } catch (err: any) {
+      setFixResult({ success: false, error: err.message })
+    } finally {
+      setFixing(false)
     }
   }
 
@@ -54,13 +74,43 @@ export default function RetellDebugPage() {
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">🔧 Retell API Debug</h1>
-        <button
-          onClick={fetchDebugData}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          🔄 Yenile
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={fixWebhooks}
+            disabled={fixing}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {fixing ? "⏳ Düzeltiliyor..." : "🔧 Webhook'ları Düzelt"}
+          </button>
+          <button
+            onClick={fetchDebugData}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            🔄 Yenile
+          </button>
+        </div>
       </div>
+
+      {/* Fix Result Alert */}
+      {fixResult && (
+        <div className={`mb-6 p-4 rounded border ${
+          fixResult.success
+            ? "bg-green-50 border-green-200 text-green-800"
+            : "bg-red-50 border-red-200 text-red-800"
+        }`}>
+          <div className="font-bold mb-2">
+            {fixResult.success ? "✅ Başarılı!" : "❌ Hata"}
+          </div>
+          <div className="text-sm">
+            {fixResult.message || fixResult.error}
+          </div>
+          {fixResult.webhookUrl && (
+            <div className="text-xs mt-2 font-mono bg-white/50 p-2 rounded">
+              Webhook URL: {fixResult.webhookUrl}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="space-y-6">
         {/* Organization Info */}
