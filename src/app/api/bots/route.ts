@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { createBotSchema } from "@/lib/validations"
 import { z } from "zod"
-import { CHECK_AVAILABILITY_TOOL } from "@/lib/tools"
+import { CHECK_AVAILABILITY_TOOL, CREATE_RESERVATION_TOOL } from "@/lib/tools"
 
 export const dynamic = "force-dynamic"
 
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (session.user.customerType === "HOTEL") {
-      llmPayload.general_tools = [CHECK_AVAILABILITY_TOOL]
+      llmPayload.general_tools = [CHECK_AVAILABILITY_TOOL, CREATE_RESERVATION_TOOL]
     }
 
     const llm = await callRetellApi("POST", "/create-retell-llm", llmPayload, organizationId) as any
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
         boostedKeywords: data.boostedKeywords || [],
         normalizeForSpeech: data.normalizeForSpeech ?? true,
         optOutSensitiveDataStorage: data.optOutSensitiveDataStorage || false,
-        customTools: session.user.customerType === "HOTEL" ? [CHECK_AVAILABILITY_TOOL] : undefined,
+        customTools: session.user.customerType === "HOTEL" ? [CHECK_AVAILABILITY_TOOL, CREATE_RESERVATION_TOOL] : undefined,
         // Auto-assign to creator if customer
         ...(role === "CUSTOMER" && {
           assignments: {

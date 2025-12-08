@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { updateBotSchema } from "@/lib/validations"
 import { z } from "zod"
-import { CHECK_AVAILABILITY_TOOL } from "@/lib/tools"
+import { CHECK_AVAILABILITY_TOOL, CREATE_RESERVATION_TOOL } from "@/lib/tools"
 
 export const dynamic = "force-dynamic"
 
@@ -185,9 +185,10 @@ export async function PUT(
 
     // Auto-inject tool for Hotels
     if (session.user.customerType === "HOTEL") {
-      // Filter out existing check_availability to avoid duplicates
-      finalTools = finalTools.filter((t: any) => t.function.name !== "check_availability")
+      // Filter out existing check_availability and create_reservation to avoid duplicates
+      finalTools = finalTools.filter((t: any) => t.function.name !== "check_availability" && t.function.name !== "create_reservation")
       finalTools.push(CHECK_AVAILABILITY_TOOL)
+      finalTools.push(CREATE_RESERVATION_TOOL)
     }
 
     if ((data.generalPrompt || data.beginMessage || data.model || session.user.customerType === "HOTEL") && existingBot.retellLlmId) {
