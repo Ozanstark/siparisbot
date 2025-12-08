@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic"
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
 
-  // Only ADMIN or SUPER_ADMIN can run setup
-  if (!session?.user || (session.user.role !== "ADMIN" && !session.user.isSuperAdmin)) {
+  // Only ADMIN can run setup
+  if (!session?.user || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
   }
 
