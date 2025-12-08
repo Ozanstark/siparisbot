@@ -26,9 +26,7 @@ export async function GET(req: NextRequest) {
         organizationId,
         ...(botId && { botId }),
         ...(role === "CUSTOMER" && {
-          bot: {
-            assignments: { some: { userId } }
-          }
+          initiatedById: userId
         })
       },
       include: {
@@ -46,9 +44,7 @@ export async function GET(req: NextRequest) {
         organizationId,
         ...(botId && { botId }),
         ...(role === "CUSTOMER" && {
-          bot: {
-            assignments: { some: { userId } }
-          }
+          initiatedById: userId
         })
       }
     })

@@ -16,12 +16,25 @@ export function formatDuration(ms: number): string {
   return `${seconds}s`
 }
 
-export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  }).format(date)
+export function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return "-"
+
+  try {
+    const dateObj = typeof date === "string" ? new Date(date) : date
+
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) {
+      return "-"
+    }
+
+    return new Intl.DateTimeFormat("tr-TR", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+    }).format(dateObj)
+  } catch (error) {
+    return "-"
+  }
 }
