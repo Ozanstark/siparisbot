@@ -80,8 +80,8 @@ export async function GET(req: NextRequest) {
         number: true,
         nickname: true,
         isActive: true,
-        assignedBotId: true,
-        assignedBot: {
+        inboundAgentId: true,
+        inboundAgent: {
           select: {
             id: true,
             name: true
@@ -162,7 +162,7 @@ export async function GET(req: NextRequest) {
       phoneNumbers: {
         count: phoneNumbers.length,
         list: phoneNumbers,
-        assigned: phoneNumbers.filter(p => p.assignedBotId).length,
+        assigned: phoneNumbers.filter(p => p.inboundAgentId).length,
         active: phoneNumbers.filter(p => p.isActive).length
       },
       retell: {

@@ -197,8 +197,8 @@ export default function RetellDebugPage() {
                       {phone.isActive ? "Aktif" : "Pasif"}
                     </span>
                   </div>
-                  {phone.assignedBot ? (
-                    <div className="text-xs text-green-600 mt-1">✅ Bot: {phone.assignedBot.name}</div>
+                  {phone.inboundAgent ? (
+                    <div className="text-xs text-green-600 mt-1">✅ Bot: {phone.inboundAgent.name}</div>
                   ) : (
                     <div className="text-xs text-red-600 mt-1">❌ Bot atanmamış</div>
                   )}
