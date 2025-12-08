@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import PhoneNumberCard from "@/components/phone-numbers/phone-number-card"
 import ImportPhoneDialog from "@/components/phone-numbers/import-phone-dialog"
