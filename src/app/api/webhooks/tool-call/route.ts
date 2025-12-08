@@ -181,20 +181,16 @@ async function executeBuiltInTool(
     case "create_order":
       // Validated Logic for creating an order
       try {
-        console.log("Creating order with args:", args)
+        console.log("Creating/Updating order with args:", args)
 
         // we need the customer (restaurant) ID from the call
         if (!call || !call.bot || !call.bot.organizationId) {
           throw new Error("Call context missing organization/bot info")
         }
 
-        // Get the call's initiator to link the customer
-        // If the call doesn't have an initiator (e.g. inbound), we might need to rely on the organization owner or find a default user
-        // For now, we'll try to find the user associated with the organization
         const organizationId = call.bot.organizationId
 
         // Find a default user for this org to assign the order to (usually the admin/owner)
-        // In a real scenario, this might be based on the specific phone number or department
         const defaultUser = await prisma.user.findFirst({
           where: { organizationId: organizationId }
         })
@@ -203,15 +199,35 @@ async function executeBuiltInTool(
           throw new Error("No user found for this organization to assign order")
         }
 
-        const newOrder = await prisma.order.create({
-          data: {
+        // Clean up total amount
+        let totalAmount = 0
+        if (args.total_amount) {
+          // Remove currency symbols and parse
+          const cleaned = String(args.total_amount).replace(/[^0-9.]/g, "")
+          totalAmount = parseFloat(cleaned) || 0
+        }
+
+        // Upsert order: Create if new, Update if exists (for changes during call)
+        const newOrder = await prisma.order.upsert({
+          where: { callId: call.id },
+          update: {
+            customerName: args.customer_name || args.name || "Misafir Müşteri",
+            customerPhone: args.customer_phone || args.phone || call.fromNumber || "Bilinmiyor",
+            items: args.items || args.order_details || "Belirtilmedi",
+            deliveryAddress: args.delivery_address || args.address || "Teslimat adresi belirtilmedi",
+            totalAmount: totalAmount,
+            notes: args.notes || "",
+            // Don't reset status on update usually, but here maybe we want to ensure it's PENDING?
+            // Let's leave status as is if updating, unless we want to reset.
+          },
+          create: {
             customerId: defaultUser.id,
             callId: call.id,
             customerName: args.customer_name || args.name || "Misafir Müşteri",
             customerPhone: args.customer_phone || args.phone || call.fromNumber || "Bilinmiyor",
             items: args.items || args.order_details || "Belirtilmedi",
             deliveryAddress: args.delivery_address || args.address || "Teslimat adresi belirtilmedi",
-            totalAmount: args.total_amount ? parseFloat(args.total_amount) : 0,
+            totalAmount: totalAmount,
             notes: args.notes || "",
             status: "PENDING"
           }
@@ -227,7 +243,7 @@ async function executeBuiltInTool(
         console.error("Failed to create order:", err)
         return {
           error: true,
-          message: "Sipariş oluşturulurken bir hata oluştu. Lütfen yetkiliyi bağlayın."
+          message: "Sipariş oluşturulurken bir hata oluştu: " + err.message
         }
       }
 
