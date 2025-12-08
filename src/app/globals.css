@@ -84,12 +84,12 @@
 
   /* Modern Glassmorphism & Effects */
   .glass {
-    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10;
+    @apply bg-white/85 dark:bg-black/70 backdrop-blur-xl border border-white/20 dark:border-white/10;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
   }
 
   .glass-card {
-    @apply bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-sm transition-all duration-300 hover:shadow-md;
+    @apply bg-white/60 dark:bg-gray-900/50 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-sm transition-all duration-300 hover:shadow-md;
   }
 
   .text-gradient {

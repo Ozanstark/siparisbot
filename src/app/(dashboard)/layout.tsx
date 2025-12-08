@@ -61,7 +61,10 @@ export default async function DashboardLayout({
     : [...commonNavigation, ...customerNavigation]
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-black/90 flex bg-grid-pattern relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-black/90 flex relative overflow-hidden">
+      {/* Background Grid Pattern - Separated to avoid masking content */}
+      <div className="absolute inset-0 bg-grid-pattern pointer-events-none z-0" />
+
       {/* Glow Effects */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -z-10 animate-pulse" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] -z-10" />
@@ -134,7 +137,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen md:pr-4 md:py-4">
+      <div className="flex-1 flex flex-col min-h-screen md:pr-4 md:py-4 relative z-10">
         {/* Mobile Header */}
         <header className="h-16 md:hidden flex items-center justify-between px-4 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b sticky top-0 z-40">
           <Link href="/" className="font-bold text-lg text-primary flex items-center gap-2">
