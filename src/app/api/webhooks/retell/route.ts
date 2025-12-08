@@ -275,18 +275,21 @@ async function handleCallAnalyzed(
 
     // Create order or reservation based on customer type and analysis data
     if (call && customAnalysisData) {
-      if (call.initiatedBy.customerType === "RESTAURANT" && customAnalysisData.order) {
+      // Support both flat structure (simpler for dashboard) and nested 'order' object
+      const data = customAnalysisData.order || customAnalysisData
+
+      if (call.initiatedBy.customerType === "RESTAURANT" && (data.items || data.customer_name)) {
         // Create order for restaurant
         await tx.order.create({
           data: {
             customerId: call.initiatedById,
             callId: callId,
-            customerName: customAnalysisData.order.customer_name || "Unknown",
-            customerPhone: callData.from_number || call.fromNumber,
-            items: customAnalysisData.order.items || transcript || "No items specified",
-            totalAmount: customAnalysisData.order.total_amount ? parseFloat(customAnalysisData.order.total_amount) : null,
-            deliveryAddress: customAnalysisData.order.delivery_address || null,
-            notes: customAnalysisData.order.notes || null,
+            customerName: data.customer_name || "Unknown",
+            customerPhone: data.phone || callData.from_number || call.fromNumber,
+            items: data.items || transcript || "No items specified",
+            totalAmount: data.total_amount ? parseFloat(data.total_amount) : null,
+            deliveryAddress: data.delivery_address || null,
+            notes: data.notes || null,
             status: "PENDING"
           }
         })

@@ -54,13 +54,13 @@ export default function CustomerCallsPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Calls</h1>
-        <p className="text-gray-600 mt-1">Manage your calls and make web calls</p>
+        <h1 className="text-3xl font-bold">Görüşmeler</h1>
+        <p className="text-gray-600 mt-1">Görüşmelerinizi yönetin ve web araması yapın</p>
       </div>
 
       {bots.length === 0 ? (
         <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
-          No bots assigned to you. Ask your admin to assign a bot.
+          Size atanmış asistan bulunamadı. Lütfen yöneticinizle iletişime geçin.
         </div>
       ) : null}
 
@@ -69,43 +69,39 @@ export default function CustomerCallsPage() {
         <div className="flex gap-1 overflow-x-auto">
           <button
             onClick={() => setActiveTab("active")}
-            className={`px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === "active"
+            className={`px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === "active"
                 ? "border-blue-600 text-blue-600"
                 : "border-transparent text-gray-600 hover:text-gray-900"
-            }`}
+              }`}
           >
-            Active Calls
+            Aktif Görüşmeler
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === "history"
+            className={`px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === "history"
                 ? "border-blue-600 text-blue-600"
                 : "border-transparent text-gray-600 hover:text-gray-900"
-            }`}
+              }`}
           >
-            Call History
+            Görüşme Geçmişi
           </button>
           <button
             onClick={() => setActiveTab("web-call")}
-            className={`px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === "web-call"
+            className={`px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === "web-call"
                 ? "border-blue-600 text-blue-600"
                 : "border-transparent text-gray-600 hover:text-gray-900"
-            }`}
+              }`}
           >
-            Web Call
+            Web Araması
           </button>
           <button
             onClick={() => setActiveTab("batch")}
-            className={`px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === "batch"
+            className={`px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === "batch"
                 ? "border-blue-600 text-blue-600"
                 : "border-transparent text-gray-600 hover:text-gray-900"
-            }`}
+              }`}
           >
-            Batch Calls
+            Toplu Arama
           </button>
         </div>
       </div>
@@ -123,7 +119,7 @@ export default function CustomerCallsPage() {
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               disabled={bots.length === 0}
             >
-              + Initiate Phone Call
+              + Telefon Araması Başlat
             </button>
           </div>
           <CallTable calls={calls} isAdmin={false} />
