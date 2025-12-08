@@ -23,9 +23,7 @@ export default async function CallDetailsPage({
     where: {
       id: params.callId,
       organizationId: session.user.organizationId,
-      bot: {
-        assignments: { some: { userId: session.user.id } }
-      }
+      initiatedById: session.user.id
     },
     include: {
       bot: { select: { id: true, name: true } },
@@ -47,6 +45,14 @@ export default async function CallDetailsPage({
     }
   }
 
+  // Türkçe durum çevirileri
+  const statusTranslations: Record<string, string> = {
+    "ANALYZED": "Analiz Edildi",
+    "ENDED": "Bitti",
+    "IN_PROGRESS": "Devam Ediyor",
+    "FAILED": "Başarısız"
+  }
+
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -54,9 +60,9 @@ export default async function CallDetailsPage({
           href="/customer/calls"
           className="text-blue-600 hover:text-blue-700 mb-4 inline-block"
         >
-          ← Back to Calls
+          ← Görüşmelere Dön
         </Link>
-        <h1 className="text-3xl font-bold">Call Details</h1>
+        <h1 className="text-3xl font-bold">Görüşme Detayları</h1>
         <p className="text-gray-600 mt-1">
           {formatDate(call.createdAt)}
         </p>
@@ -64,7 +70,7 @@ export default async function CallDetailsPage({
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Status</h3>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">Durum</h3>
           <span
             className={`inline-block px-3 py-1 rounded text-sm font-medium ${
               call.status === "ANALYZED"
@@ -76,32 +82,32 @@ export default async function CallDetailsPage({
                 : "bg-gray-100 text-gray-800"
             }`}
           >
-            {call.status}
+            {statusTranslations[call.status] || call.status}
           </span>
         </div>
         <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Duration</h3>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">Süre</h3>
           <p className="text-2xl font-bold">
-            {call.durationMs ? formatDuration(call.durationMs) : "N/A"}
+            {call.durationMs ? formatDuration(call.durationMs) : "-"}
           </p>
         </div>
         <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Bot</h3>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">Asistan</h3>
           <p className="text-lg font-semibold">{call.bot.name}</p>
         </div>
         <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">To Number</h3>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">Aranan Numara</h3>
           <p className="text-lg font-mono">{call.toNumber}</p>
         </div>
       </div>
 
       {call.analytics && (
         <div className="bg-white border rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Call Analytics</h2>
+          <h2 className="text-xl font-semibold mb-4">Görüşme Analizi</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {call.analytics.sentiment && (
               <div>
-                <span className="text-sm text-gray-500">Sentiment:</span>
+                <span className="text-sm text-gray-500">Duygu Analizi:</span>
                 <span
                   className={`ml-2 px-2 py-1 text-xs rounded ${
                     call.analytics.sentiment === "positive"
@@ -111,19 +117,21 @@ export default async function CallDetailsPage({
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  {call.analytics.sentiment}
+                  {call.analytics.sentiment === "positive" ? "Olumlu" :
+                   call.analytics.sentiment === "negative" ? "Olumsuz" :
+                   call.analytics.sentiment === "neutral" ? "Nötr" : call.analytics.sentiment}
                 </span>
               </div>
             )}
             {call.analytics.summary && (
-              <div>
-                <span className="text-sm text-gray-500">Summary:</span>
+              <div className="md:col-span-2">
+                <span className="text-sm text-gray-500">Özet:</span>
                 <p className="text-sm mt-1">{call.analytics.summary}</p>
               </div>
             )}
             {call.analytics.e2eLatencyP50 && (
               <div>
-                <span className="text-sm text-gray-500">Avg Latency (P50):</span>
+                <span className="text-sm text-gray-500">Ortalama Gecikme (P50):</span>
                 <p className="font-medium">{call.analytics.e2eLatencyP50}ms</p>
               </div>
             )}
@@ -142,7 +150,7 @@ export default async function CallDetailsPage({
 
       {transcript && (
         <div className="bg-white border rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Transcript</h2>
+          <h2 className="text-xl font-semibold mb-4">Konuşma Metni</h2>
           <div className="space-y-3">
             {Array.isArray(transcript) ? (
               transcript.map((message: any, index: number) => (
@@ -155,7 +163,7 @@ export default async function CallDetailsPage({
                     }`}
                   >
                     <p className="text-xs text-gray-500 mb-1">
-                      {message.role === "agent" ? "Bot" : "User"}
+                      {message.role === "agent" ? "Asistan" : "Müşteri"}
                     </p>
                     <p className="text-sm">{message.content}</p>
                   </div>
