@@ -4,7 +4,6 @@
 
 @layer base {
   :root {
-    /* Premium Light Mode (Clean, High-Tech) */
     --background: 210 40% 98%;
     --foreground: 240 10% 3.9%;
 
@@ -14,9 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    /* Vivid Indigo-Violet Core */
     --primary: 252 87% 65%;
-    /* #818cf8 - More vibrant */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 240 4.8% 95.9%;
@@ -36,13 +33,10 @@
     --ring: 252 87% 65%;
 
     --radius: 1rem;
-    /* More rounded premium feel */
   }
 
   .dark {
-    /* Deep Space Dark Mode */
     --background: 224 71% 4%;
-    /* #020412 - Deep dark blue-black */
     --foreground: 0 0% 98%;
 
     --card: 224 71% 5%;
