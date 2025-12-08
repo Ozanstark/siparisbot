@@ -30,12 +30,14 @@ export default async function DashboardLayout({
   const isAdmin = session.user.role === "ADMIN"
   const basePath = isAdmin ? "/admin" : "/customer"
 
-  const navigation = [
+  const commonNavigation = [
     { name: 'Asistanlar', href: `${basePath}/bots`, icon: LayoutDashboard },
     { name: 'Görüşmeler', href: `${basePath}/calls`, icon: Phone },
-    // Show Orders for everyone (unified role) or conditional if needed
-    { name: 'Siparişler', href: `${basePath}/orders`, icon: FileText },
     { name: 'Bilgi Bankası', href: `${basePath}/knowledge-bases`, icon: BookOpen },
+  ]
+
+  const customerNavigation = [
+    { name: 'Siparişler', href: `${basePath}/orders`, icon: FileText },
   ]
 
   const adminNavigation = [
@@ -44,7 +46,9 @@ export default async function DashboardLayout({
     { name: 'Ayarlar', href: `${basePath}/settings`, icon: Settings },
   ]
 
-  const navItems = isAdmin ? [...navigation, ...adminNavigation] : navigation
+  const navItems = isAdmin
+    ? [...commonNavigation, ...adminNavigation]
+    : [...commonNavigation, ...customerNavigation]
 
   return (
     <div className="min-h-screen bg-gray-50/50 flex">
