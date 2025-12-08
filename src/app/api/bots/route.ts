@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { getRetellClient, callRetellApi } from "@/lib/retell"
 import { createBotSchema } from "@/lib/validations"
 import { z } from "zod"
+import { CHECK_AVAILABILITY_TOOL } from "@/lib/tools"
 
 export const dynamic = "force-dynamic"
 
@@ -70,11 +71,17 @@ export async function POST(req: NextRequest) {
     const retellClient = await getRetellClient(organizationId)
 
     // Step 1: Create LLM in Retell (using raw API as SDK v2 lacks it)
-    const llm = await callRetellApi("POST", "/create-retell-llm", {
+    const llmPayload: any = {
       model: data.model,
       general_prompt: data.generalPrompt,
       begin_message: data.beginMessage || "Hello! How can I help you today?"
-    }, organizationId) as any
+    }
+
+    if (session.user.customerType === "HOTEL") {
+      llmPayload.general_tools = [CHECK_AVAILABILITY_TOOL]
+    }
+
+    const llm = await callRetellApi("POST", "/create-retell-llm", llmPayload, organizationId) as any
 
     // Step 2: Create Agent in Retell with advanced settings
     const webhookUrl = data.webhookUrl || `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/retell`
@@ -129,6 +136,7 @@ export async function POST(req: NextRequest) {
         boostedKeywords: data.boostedKeywords || [],
         normalizeForSpeech: data.normalizeForSpeech ?? true,
         optOutSensitiveDataStorage: data.optOutSensitiveDataStorage || false,
+        customTools: session.user.customerType === "HOTEL" ? [CHECK_AVAILABILITY_TOOL] : undefined,
         // Auto-assign to creator if customer
         ...(role === "CUSTOMER" && {
           assignments: {

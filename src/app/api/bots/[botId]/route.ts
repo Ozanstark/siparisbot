@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { updateBotSchema } from "@/lib/validations"
 import { z } from "zod"
+import { CHECK_AVAILABILITY_TOOL } from "@/lib/tools"
 
 export const dynamic = "force-dynamic"
 
@@ -180,11 +181,24 @@ export async function PUT(
     }
 
     // Update Retell LLM if prompt or model changed
-    if ((data.generalPrompt || data.beginMessage || data.model) && existingBot.retellLlmId) {
+    let finalTools = (existingBot.customTools as any[]) || []
+
+    // Auto-inject tool for Hotels
+    if (session.user.customerType === "HOTEL") {
+      // Filter out existing check_availability to avoid duplicates
+      finalTools = finalTools.filter((t: any) => t.function.name !== "check_availability")
+      finalTools.push(CHECK_AVAILABILITY_TOOL)
+    }
+
+    if ((data.generalPrompt || data.beginMessage || data.model || session.user.customerType === "HOTEL") && existingBot.retellLlmId) {
       const llmUpdateData: any = {}
       if (data.generalPrompt) llmUpdateData.general_prompt = data.generalPrompt
       if (data.beginMessage !== undefined) llmUpdateData.begin_message = data.beginMessage
       if (data.model) llmUpdateData.model = data.model
+
+      if (session.user.customerType === "HOTEL") {
+        llmUpdateData.general_tools = finalTools
+      }
 
       const llmResponse = await fetch(`https://api.retellai.com/update-retell-llm/${existingBot.retellLlmId}`, {
         method: "PATCH",
@@ -224,6 +238,7 @@ export async function PUT(
         ...(data.boostedKeywords !== undefined && { boostedKeywords: data.boostedKeywords }),
         ...(data.normalizeForSpeech !== undefined && { normalizeForSpeech: data.normalizeForSpeech }),
         ...(data.optOutSensitiveDataStorage !== undefined && { optOutSensitiveDataStorage: data.optOutSensitiveDataStorage }),
+        ...(session.user.customerType === "HOTEL" && { customTools: finalTools }),
       },
       include: {
         assignments: {

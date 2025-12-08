@@ -117,7 +117,7 @@ export async function PUT(
       await callRetellApi(
         "PATCH",
         `/update-retell-llm/${bot.retellLlmId}`,
-        { tools: data.customTools },
+        { general_tools: data.customTools },
         organizationId
       )
     }
