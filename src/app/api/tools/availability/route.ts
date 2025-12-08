@@ -13,110 +13,116 @@ const availabilityCheckSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-    // Verify basic auth or secret (Retell usually sends secret header if configured, but for simplicity we might skip complex auth or check for a custom header if we configured it)
-    // Ideally we should check strict "x-retell-webhook-secret" but standard function calling often just hits the endpoint.
-    // For now, let's keep it public or valid secret check if present.
-
     try {
         const body = await req.json()
-        // Retell might wrap arguments in "args" or send flat. Let's assume Retell sends arguments as body.
-        // If this is a Retell structured call, the body matches the function arguments.
-
         const { checkIn, checkOut, guests, roomType } = availabilityCheckSchema.parse(body)
+
+        // Helper to check availability for a specific range
+        const checkRange = async (start: Date, end: Date) => {
+            // 1. Find rooms matching guest capacity
+            const roomTypes = await prisma.roomType.findMany({
+                where: {
+                    isActive: true,
+                    maxGuests: { gte: guests },
+                    name: roomType ? { contains: roomType, mode: "insensitive" } : undefined
+                }
+            })
+
+            if (roomTypes.length === 0) return { available: false, rooms: [] }
+
+            const validRooms = []
+
+            for (const room of roomTypes) {
+                // Check blocked dates
+                const blocked = await prisma.roomAvailability.count({
+                    where: {
+                        roomTypeId: room.id,
+                        isBlocked: true,
+                        date: { gte: start, lt: end }
+                    }
+                })
+                if (blocked > 0) continue
+
+                // Check reservations
+                const bookings = await prisma.reservation.count({
+                    where: {
+                        roomTypeId: room.id,
+                        status: { in: ["CONFIRMED", "CHECKED_IN"] },
+                        OR: [
+                            { checkIn: { lte: end, gte: start } },
+                            { checkOut: { lte: end, gte: start } },
+                            { checkIn: { lte: start }, checkOut: { gte: end } }
+                        ]
+                    }
+                })
+
+                if (room.totalRooms - bookings > 0) {
+                    validRooms.push({
+                        name: room.name,
+                        price: room.pricePerNight,
+                        count: room.totalRooms - bookings
+                    })
+                }
+            }
+
+            return { available: validRooms.length > 0, rooms: validRooms }
+        }
 
         const startDate = new Date(checkIn)
         const endDate = new Date(checkOut)
 
-        // 1. Find relevant room types (matching guest capacity)
-        const roomTypes = await prisma.roomType.findMany({
-            where: {
-                isActive: true,
-                maxGuests: { gte: guests },
-                name: roomType ? { contains: roomType, mode: "insensitive" } : undefined
-            }
-        })
+        // Check requested dates
+        const primaryResult = await checkRange(startDate, endDate)
 
-        if (roomTypes.length === 0) {
+        if (primaryResult.available) {
+            const lowestPrice = Math.min(...primaryResult.rooms.map(r => r.price))
             return NextResponse.json({
-                available: false,
-                message: "Maalesef bu kişi sayısı için uygun odamız bulunmuyor veya aradığınız kriterde oda yok."
+                available: true,
+                rooms: primaryResult.rooms,
+                lowestPrice,
+                message: `Evet, ${checkIn} girişli ${primaryResult.rooms.length} farklı oda tipimiz müsait. Fiyatlarımız gecelik ${lowestPrice} TL'den başlıyor.`
             })
         }
 
-        // 2. Check reservations for each room type
-        const availableRooms = []
+        // If not available, check alternatives (+/- 3 days)
+        const alternatives = []
+        // Check 3 days before and 3 days after
+        for (let i = -3; i <= 3; i++) {
+            if (i === 0) continue // Skip original date (already checked)
 
-        for (const room of roomTypes) {
-            // 1. Check for Blocked Dates (Stop Sell)
-            // checkOut day doesn't matter for availability if they leave in the morning, 
-            // but we need to ensure every night of stay is unblocked.
-            // Range: [startDate, endDate)
-            const blockedDatesCount = await prisma.roomAvailability.count({
-                where: {
-                    roomTypeId: room.id,
-                    isBlocked: true,
-                    date: {
-                        gte: startDate,
-                        lt: endDate
-                    }
-                }
-            })
+            const altStart = new Date(startDate)
+            altStart.setDate(altStart.getDate() + i)
 
-            if (blockedDatesCount > 0) {
-                // Room is closed for at least one night of the stay
-                continue
-            }
+            const altEnd = new Date(endDate)
+            altEnd.setDate(altEnd.getDate() + i)
 
-            // 2. Count confirmed reservations that overlap with requested dates
-            const bookings = await prisma.reservation.count({
-                where: {
-                    roomTypeId: room.id,
-                    status: { in: ["CONFIRMED", "CHECKED_IN"] },
-                    OR: [
-                        {
-                            // Booking starts during request
-                            checkIn: { lte: endDate, gte: startDate }
-                        },
-                        {
-                            // Booking ends during request
-                            checkOut: { lte: endDate, gte: startDate }
-                        },
-                        {
-                            // Booking covers the whole request
-                            checkIn: { lte: startDate },
-                            checkOut: { gte: endDate }
-                        }
-                    ]
-                }
-            })
+            // Skip past dates
+            if (altStart < new Date()) continue
 
-            const availableCount = room.totalRooms - bookings
-
-            if (availableCount > 0) {
-                availableRooms.push({
-                    name: room.name,
-                    price: room.pricePerNight,
-                    availableCount,
-                    description: room.description
+            const result = await checkRange(altStart, altEnd)
+            if (result.available) {
+                alternatives.push({
+                    date: altStart.toISOString().split('T')[0],
+                    rooms: result.rooms.map(r => r.name).join(", ")
                 })
             }
+
+            if (alternatives.length >= 3) break // Limit to 3 suggestions
         }
 
-        if (availableRooms.length === 0) {
-            return NextResponse.json({
-                available: false,
-                message: "İstediğiniz tarihlerde ( " + checkIn + " - " + checkOut + " ) maalesef boş odamız kalmadı."
-            })
-        }
+        let message = `Maalesef ${checkIn} - ${checkOut} tarihleri arasında istediğiniz kriterde boş odamız kalmadı.`
 
-        // Success response
-        const lowestPrice = Math.min(...availableRooms.map(r => r.price))
+        if (alternatives.length > 0) {
+            const altText = alternatives.map(a => `${a.date} (${a.rooms})`).join(", ")
+            message += ` Ancak şu tarihlerde müsaitliğimiz var: ${altText}. Bu tarihlerden birini düşünür müsünüz?`
+        } else {
+            message += " Yakın tarihlerde de ne yazık ki doluyuz."
+        }
 
         return NextResponse.json({
-            available: true,
-            rooms: availableRooms,
-            lowestPrice,
-            message: `Evet, ${checkIn} girişli ${availableRooms.length} farklı oda tipimiz müsait. Fiyatlarımız gecelik ${lowestPrice} TL'den başlıyor.`
+            available: false,
+            alternatives,
+            message
         })
 
     } catch (error) {
