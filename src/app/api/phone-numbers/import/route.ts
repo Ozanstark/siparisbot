@@ -65,8 +65,8 @@ export async function POST(req: NextRequest) {
       retellData.termination_uri = data.sipUri
 
       if (data.sipUsername && data.sipPassword) {
-        retellData.termination_username = data.sipUsername
-        retellData.termination_password = data.sipPassword
+        retellData.sip_trunk_auth_username = data.sipUsername
+        retellData.sip_trunk_auth_password = data.sipPassword
       }
     }
 
