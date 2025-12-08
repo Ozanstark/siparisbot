@@ -19,7 +19,7 @@ export default function CallTable({ calls, isAdmin }: CallTableProps) {
   if (calls.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">No calls yet</p>
+        <p className="text-gray-500 text-lg">Henüz görüşme yok</p>
       </div>
     )
   }
@@ -30,30 +30,30 @@ export default function CallTable({ calls, isAdmin }: CallTableProps) {
         <thead>
           <tr className="border-b bg-gray-50">
             <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
-              Date
+              Tarih
             </th>
             <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
-              Bot
+              Asistan
             </th>
             <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
-              To Number
+              Aranan Numara
             </th>
             <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
-              Duration
+              Süre
             </th>
             <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
-              Status
+              Durum
             </th>
             {isAdmin && (
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
-                Initiated By
+                Başlatan
               </th>
             )}
             <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
-              Sentiment
+              Duygu Analizi
             </th>
             <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
-              Actions
+              İşlemler
             </th>
           </tr>
         </thead>
@@ -72,17 +72,16 @@ export default function CallTable({ calls, isAdmin }: CallTableProps) {
               </td>
               <td className="py-3 px-4">
                 <span
-                  className={`px-2 py-1 text-xs rounded ${
-                    call.status === "ANALYZED"
+                  className={`px-2 py-1 text-xs rounded ${call.status === "ANALYZED"
                       ? "bg-green-100 text-green-800"
                       : call.status === "ENDED"
-                      ? "bg-blue-100 text-blue-800"
-                      : call.status === "IN_PROGRESS"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : call.status === "FAILED"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
+                        ? "bg-blue-100 text-blue-800"
+                        : call.status === "IN_PROGRESS"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : call.status === "FAILED"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                    }`}
                 >
                   {call.status}
                 </span>
@@ -95,13 +94,12 @@ export default function CallTable({ calls, isAdmin }: CallTableProps) {
               <td className="py-3 px-4 text-sm">
                 {call.analytics?.sentiment ? (
                   <span
-                    className={`px-2 py-1 text-xs rounded ${
-                      call.analytics.sentiment === "positive"
+                    className={`px-2 py-1 text-xs rounded ${call.analytics.sentiment === "positive"
                         ? "bg-green-100 text-green-800"
                         : call.analytics.sentiment === "negative"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
+                          ? "bg-red-100 text-red-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
                   >
                     {call.analytics.sentiment}
                   </span>
@@ -114,7 +112,7 @@ export default function CallTable({ calls, isAdmin }: CallTableProps) {
                   href={`${isAdmin ? "/admin" : "/customer"}/calls/${call.id}`}
                   className="text-blue-600 hover:text-blue-700"
                 >
-                  View
+                  Görüntüle
                 </Link>
               </td>
             </tr>
