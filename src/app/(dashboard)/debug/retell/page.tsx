@@ -169,10 +169,64 @@ export default function RetellDebugPage() {
           )}
         </div>
 
+        {/* Phone Numbers */}
+        <div className="bg-white border rounded-lg p-6">
+          <h2 className="text-xl font-bold mb-4">📞 Telefon Numaraları: {data?.phoneNumbers?.count}</h2>
+          <div className="space-y-2 mb-4">
+            <div className="flex justify-between">
+              <span>Bot'a Atanmış:</span>
+              <span className={`font-bold ${data?.phoneNumbers?.assigned === data?.phoneNumbers?.count && data?.phoneNumbers?.count > 0 ? "text-green-600" : "text-yellow-600"}`}>
+                {data?.phoneNumbers?.assigned} / {data?.phoneNumbers?.count}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Aktif:</span>
+              <span className="font-bold">{data?.phoneNumbers?.active} / {data?.phoneNumbers?.count}</span>
+            </div>
+          </div>
+          {data?.phoneNumbers?.list && data.phoneNumbers.list.length > 0 ? (
+            <div className="space-y-2">
+              {data.phoneNumbers.list.map((phone: any) => (
+                <div key={phone.id} className="p-3 bg-gray-50 rounded">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium">{phone.number}</div>
+                      {phone.nickname && <div className="text-xs text-gray-600">{phone.nickname}</div>}
+                    </div>
+                    <span className={`px-2 py-1 rounded text-xs ${phone.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
+                      {phone.isActive ? "Aktif" : "Pasif"}
+                    </span>
+                  </div>
+                  {phone.assignedBot ? (
+                    <div className="text-xs text-green-600 mt-1">✅ Bot: {phone.assignedBot.name}</div>
+                  ) : (
+                    <div className="text-xs text-red-600 mt-1">❌ Bot atanmamış</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded">
+              ⚠️ Hiç telefon numarası yok! Admin → Telefon Numaraları'ndan ekleyin.
+            </div>
+          )}
+        </div>
+
         {/* Bots */}
         <div className="bg-white border rounded-lg p-6">
           <h2 className="text-xl font-bold mb-4">🤖 Botlar: {data?.bots?.count}</h2>
-          <p>Webhook URL'li: {data?.bots?.withWebhook} / {data?.bots?.count}</p>
+          <div className="space-y-2 mb-4">
+            <div className="flex justify-between">
+              <span>Webhook URL'li:</span>
+              <span className="font-bold">{data?.bots?.withWebhook} / {data?.bots?.count}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Telefon Numaralı:</span>
+              <span className={`font-bold ${data?.bots?.withPhoneNumber > 0 ? "text-green-600" : "text-yellow-600"}`}>
+                {data?.bots?.withPhoneNumber} / {data?.bots?.count}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

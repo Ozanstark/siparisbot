@@ -60,14 +60,42 @@ export async function GET(req: NextRequest) {
         name: true,
         retellAgentId: true,
         webhookUrl: true,
-        isActive: true
+        isActive: true,
+        inboundPhones: {
+          select: {
+            id: true,
+            number: true,
+            nickname: true,
+            isActive: true
+          }
+        }
+      }
+    })
+
+    // 5. Get phone numbers
+    const phoneNumbers = await prisma.phoneNumber.findMany({
+      where: { organizationId },
+      select: {
+        id: true,
+        number: true,
+        nickname: true,
+        isActive: true,
+        assignedBotId: true,
+        assignedBot: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       }
     })
 
     let retellCalls = null
     let retellError = null
+    let retellPhoneNumbers = null
+    let retellPhoneError = null
 
-    // 5. Try to fetch calls from Retell API
+    // 6. Try to fetch calls from Retell API
     if (hasApiKey) {
       try {
         const response = await fetch("https://api.retellai.com/v2/list-calls", {
@@ -89,6 +117,26 @@ export async function GET(req: NextRequest) {
       } catch (error: any) {
         retellError = `Retell API Request Failed: ${error.message}`
       }
+
+      // 7. Try to fetch phone numbers from Retell
+      try {
+        const phoneResponse = await fetch("https://api.retellai.com/v2/list-phone-numbers", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${organization.retellApiKey}`,
+            "Content-Type": "application/json"
+          }
+        })
+
+        if (phoneResponse.ok) {
+          const phoneData = await phoneResponse.json()
+          retellPhoneNumbers = phoneData.phone_numbers || phoneData
+        } else {
+          retellPhoneError = `${phoneResponse.status} ${phoneResponse.statusText}`
+        }
+      } catch (error: any) {
+        retellPhoneError = error.message
+      }
     }
 
     return NextResponse.json({
@@ -108,14 +156,23 @@ export async function GET(req: NextRequest) {
       bots: {
         count: bots.length,
         list: bots,
-        withWebhook: bots.filter(b => b.webhookUrl).length
+        withWebhook: bots.filter(b => b.webhookUrl).length,
+        withPhoneNumber: bots.filter(b => b.inboundPhones && b.inboundPhones.length > 0).length
+      },
+      phoneNumbers: {
+        count: phoneNumbers.length,
+        list: phoneNumbers,
+        assigned: phoneNumbers.filter(p => p.assignedBotId).length,
+        active: phoneNumbers.filter(p => p.isActive).length
       },
       retell: {
         hasApiKey,
         apiWorking: !!retellCalls,
         callsCount: retellCalls ? (Array.isArray(retellCalls) ? retellCalls.length : 0) : 0,
         calls: retellCalls ? (Array.isArray(retellCalls) ? retellCalls.slice(0, 5) : []) : null,
-        error: retellError
+        error: retellError,
+        phoneNumbers: retellPhoneNumbers,
+        phoneError: retellPhoneError
       }
     })
   } catch (error: any) {
