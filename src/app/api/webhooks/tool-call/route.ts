@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { callRetellApi } from "@/lib/retell"
 import crypto from "crypto"
 
 export const dynamic = "force-dynamic"
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Find the call in database to get organization context
-    const call = await prisma.call.findUnique({
+    let call = await prisma.call.findUnique({
       where: { retellCallId: call_id },
       include: {
         bot: {
@@ -41,11 +42,61 @@ export async function POST(req: NextRequest) {
     })
 
     if (!call) {
-      console.error("Call not found:", call_id)
-      return NextResponse.json(
-        { error: "Call not found" },
-        { status: 404 }
-      )
+      console.log("Call not found in DB, attempting to fetch from Retell API:", call_id)
+
+      try {
+        // Fetch call details from Retell
+        const retellCall = await callRetellApi("GET", `/get-call/${call_id}`)
+
+        if (!retellCall || !retellCall.agent_id) {
+          throw new Error("Retell call data missing agent_id")
+        }
+
+        // Find bot to link context
+        const bot = await prisma.bot.findUnique({
+          where: { retellAgentId: retellCall.agent_id },
+          include: { organization: true }
+        })
+
+        if (!bot) {
+          throw new Error(`Bot not found for agent_id: ${retellCall.agent_id}`)
+        }
+
+        // Find owner to link as initiator (fallback)
+        const owner = await prisma.user.findFirst({
+          where: { organizationId: bot.organizationId }
+        })
+
+        // Create the missing call record on the fly
+        call = await prisma.call.create({
+          data: {
+            retellCallId: call_id,
+            organizationId: bot.organizationId,
+            botId: bot.id,
+            initiatedById: owner?.id || "system", // Fallback if no user
+            fromNumber: retellCall.from_number,
+            toNumber: retellCall.to_number,
+            status: "IN_PROGRESS",
+            startedAt: new Date(retellCall.start_timestamp || Date.now())
+          },
+          include: {
+            bot: {
+              select: {
+                customTools: true,
+                organizationId: true
+              }
+            }
+          }
+        })
+        console.log("Recovered/Created call record:", call.id)
+
+      } catch (recoveryError) {
+        console.error("Failed to recover call context:", recoveryError)
+        return NextResponse.json(
+          { error: "Call not found and recovery failed" },
+          { status: 404 }
+        )
+      }
     }
 
     // Find the tool definition
