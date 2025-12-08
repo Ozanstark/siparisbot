@@ -1,11 +1,10 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import PhoneNumberCard from "@/components/phone-numbers/phone-number-card"
 import ImportPhoneDialog from "@/components/phone-numbers/import-phone-dialog"
 import PurchasePhoneDialog from "@/components/phone-numbers/purchase-phone-dialog"
 import AssignNumberDialog from "@/components/numbers/assign-number-dialog"
 import BindBotDialog from "@/components/numbers/bind-bot-dialog"
+import { Phone, Download, Plus, RefreshCw, AlertTriangle, ArrowRight } from "lucide-react"
 
 interface PhoneNumbersClientProps {
   hasApiKey: boolean
@@ -43,7 +42,7 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
     } catch (err: any) {
       setError(err.message)
     } finally {
-      setIsSyncing(false)
+      setTimeout(() => setIsSyncing(false), 1000) // Cosmetic delay
     }
   }
 
@@ -109,92 +108,108 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
 
   if (!hasApiKey) {
     return (
-      <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-2">Phone Numbers</h1>
-        <p className="text-gray-600 mb-8">Manage your phone numbers for inbound and outbound calls</p>
-
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-            Retell API Key Required
-          </h3>
-          <p className="text-yellow-700 mb-4">
-            Please configure your Retell API key in the settings to manage phone numbers.
-          </p>
-          <a
-            href="/admin/settings"
-            className="inline-block px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
-          >
-            Go to Settings
-          </a>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 animate-in fade-in zoom-in duration-500">
+        <div className="bg-yellow-100 dark:bg-yellow-900/30 p-6 rounded-full mb-6 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-yellow-400/20 blur-xl group-hover:blur-2xl transition-all" />
+          <AlertTriangle className="h-10 w-10 text-yellow-600 dark:text-yellow-400 relative z-10" />
         </div>
+        <h1 className="text-3xl font-bold mb-2 tracking-tight">API Anahtarı Gerekli</h1>
+        <p className="text-gray-500 max-w-md mx-auto mb-8 text-lg">
+          Telefon numaralarını yönetmek için önce organizasyon ayarlarından Retell API anahtarınızı girmeniz gerekiyor.
+        </p>
+
+        <a
+          href="/admin/settings"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all"
+        >
+          Ayarlara Git <ArrowRight className="h-4 w-4" />
+        </a>
       </div>
     )
   }
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-8">
+    <div className="animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
         <div>
-          <h1 className="text-3xl font-bold">Telefon Numaraları</h1>
-          <p className="text-gray-600 mt-1">Gelen ve giden aramalar için telefon numaralarınızı yönetin</p>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
+            Telefon Hatları
+            <span className="text-xs font-bold px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 border border-gray-200 dark:border-gray-700">
+              ADMIN
+            </span>
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg font-medium">
+            Gelen ve giden aramalar için SIP trunk ve sanal numaraları yönetin.
+          </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={handleSync}
             disabled={isSyncing}
-            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors disabled:opacity-50"
+            className={`flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-800 border text-gray-700 dark:text-gray-200 rounded-xl font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-all ${isSyncing ? 'opacity-70 cursor-wait' : ''}`}
           >
+            <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? "Senkronize ediliyor..." : "Senkronize Et"}
           </button>
+
+          <div className="h-10 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block" />
+
           <button
             onClick={() => setShowImportDialog(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all"
           >
-            Numara İçe Aktar
+            <Download className="h-4 w-4" />
+            İçe Aktar (SIP/BYOC)
           </button>
           <button
             onClick={() => setShowPurchaseDialog(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all"
           >
-            Numara Satın Al ($5/ay)
+            <Plus className="h-4 w-4" />
+            Satın Al ($5)
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-6">
+        <div className="bg-red-50 text-red-600 px-6 py-4 rounded-xl border border-red-100 mb-8 flex items-center gap-3">
+          <AlertTriangle className="h-5 w-5" />
           {error}
         </div>
       )}
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          <p className="mt-4 text-gray-600">Telefon numaraları yükleniyor...</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-48 rounded-3xl bg-gray-100 dark:bg-gray-800/50 animate-pulse" />
+          ))}
         </div>
       ) : phoneNumbers.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <p className="text-gray-600 mb-4">Henüz yapılandırılmış telefon numarası yok</p>
-          <div className="flex gap-3 justify-center">
+        <div className="text-center py-20 px-4">
+          <div className="mx-auto h-24 w-24 bg-gray-50 dark:bg-gray-800/50 rounded-full flex items-center justify-center mb-6 ring-8 ring-gray-50/50 dark:ring-gray-800/30">
+            <Phone className="h-10 w-10 text-gray-300" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Henüz Numara Yok</h3>
+          <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+            Sistemi kullanmaya başlamak için bir numara bağlayın veya satın alın.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => setShowImportDialog(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 bg-white dark:bg-gray-800 border text-gray-700 dark:text-gray-200 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
             >
-              İlk Numaranızı İçe Aktarın
+              Mevcut Numarayı Taşı
             </button>
             <button
               onClick={() => setShowPurchaseDialog(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              className="px-6 py-3 bg-primary text-white rounded-xl font-medium shadow-lg shadow-primary/30 hover:-translate-y-0.5 transition-all"
             >
-              Numara Satın Alın
+              Yeni Numara Al
             </button>
           </div>
         </div>
       ) : (
         <>
-          <div className="mb-4 text-sm text-gray-600">
-            Toplam: {phoneNumbers.length} telefon numarası
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {phoneNumbers.map((phoneNumber) => (
               <PhoneNumberCard
@@ -235,6 +250,6 @@ export default function PhoneNumbersClient({ hasApiKey }: PhoneNumbersClientProp
         currentInboundBotId={selectedNumber?.dbData?.inboundAgentId}
         currentOutboundBotId={selectedNumber?.dbData?.outboundAgentId}
       />
-    </>
+    </div>
   )
 }
