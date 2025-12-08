@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
     // 5. Try to fetch calls from Retell API
     if (hasApiKey) {
       try {
-        const response = await fetch("https://api.retellai.com/list-calls", {
+        const response = await fetch("https://api.retellai.com/v2/list-calls", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${organization.retellApiKey}`,
