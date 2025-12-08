@@ -64,6 +64,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           organizationId: user.organizationId,
           organizationSlug: user.organization.slug,
+          customerType: user.customerType,
         }
       },
     }),
@@ -75,6 +76,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role
         token.organizationId = user.organizationId
         token.organizationSlug = user.organizationSlug
+        token.customerType = user.customerType
       }
       return token
     },
@@ -84,6 +86,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string
         session.user.organizationId = token.organizationId as string
         session.user.organizationSlug = token.organizationSlug as string
+        session.user.customerType = token.customerType
       }
       return session
     },

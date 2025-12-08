@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
         name: data.name,
         hashedPassword,
         role: "CUSTOMER",
+        customerType: data.customerType as "RESTAURANT" | "HOTEL",
         organizationId
       },
       select: {

@@ -16,7 +16,8 @@ export default function AddCustomerDialog({ isOpen, onClose }: AddCustomerDialog
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: ""
+    password: "",
+    customerType: "RESTAURANT"
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,7 +39,7 @@ export default function AddCustomerDialog({ isOpen, onClose }: AddCustomerDialog
 
       router.refresh()
       onClose()
-      setFormData({ name: "", email: "", password: "" })
+      setFormData({ name: "", email: "", password: "", customerType: "RESTAURANT" })
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -82,6 +83,37 @@ export default function AddCustomerDialog({ isOpen, onClose }: AddCustomerDialog
               placeholder="john@example.com"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">İşletme Tipi *</label>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, customerType: "RESTAURANT" })}
+                className={`py-2 px-4 rounded-md border text-sm font-medium transition-colors ${formData.customerType === "RESTAURANT"
+                  ? "bg-blue-50 border-blue-500 text-blue-700"
+                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+              >
+                Restoran 🍔
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, customerType: "HOTEL" })}
+                className={`py-2 px-4 rounded-md border text-sm font-medium transition-colors ${formData.customerType === "HOTEL"
+                  ? "bg-blue-50 border-blue-500 text-blue-700"
+                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
+              >
+                Otel 🏨
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {formData.customerType === "RESTAURANT"
+                ? "Sipariş yönetimi aktif olacak."
+                : "Oda ve rezervasyon yönetimi aktif olacak."}
+            </p>
           </div>
 
           <div>

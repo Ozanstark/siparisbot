@@ -11,7 +11,8 @@ import {
   BookOpen,
   LogOut,
   Menu,
-  X
+  X,
+  Building
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -36,8 +37,12 @@ export default async function DashboardLayout({
     { name: 'Bilgi Bankası', href: `${basePath}/knowledge-bases`, icon: BookOpen },
   ]
 
+  const customerType = session.user.customerType || "RESTAURANT"
+
   const customerNavigation = [
-    { name: 'Siparişler', href: `${basePath}/orders`, icon: FileText },
+    ...(customerType === "RESTAURANT"
+      ? [{ name: 'Siparişler', href: `${basePath}/orders`, icon: FileText }]
+      : [{ name: 'Odalar', href: `${basePath}/rooms`, icon: Building }])
   ]
 
   const adminNavigation = [
