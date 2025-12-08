@@ -84,7 +84,8 @@
 
   /* Modern Glassmorphism & Effects */
   .glass {
-    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-[0_8px_30px_rgb(0, 0, 0, 0.04)];
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
   }
 
   .glass-card {
@@ -105,6 +106,7 @@
     background-size: 40px 40px;
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
     mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
   }
 
