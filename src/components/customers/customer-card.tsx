@@ -18,6 +18,11 @@ export default function CustomerCard({ customer, onDelete }: CustomerCardProps) 
         <div>
           <h3 className="text-lg font-semibold">{customer.name || "Unnamed"}</h3>
           <p className="text-sm text-gray-600 mt-1">{customer.email}</p>
+          {customer.customerType && (
+            <p className="text-xs text-gray-500 mt-1">
+              {customer.customerType === "RESTAURANT" ? "🍔 Restoran" : "🏨 Otel"}
+            </p>
+          )}
         </div>
         <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
           Müşteri
