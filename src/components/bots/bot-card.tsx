@@ -19,6 +19,7 @@ import { Edit2, Trash2, Loader2, UserMinus } from "lucide-react"
 interface BotCardProps {
   bot: Bot & {
     _count?: { calls: number }
+    inboundPhones?: Array<{ number: string }>
     assignments?: Array<{
       user: {
         id: string
@@ -105,6 +106,14 @@ export default function BotCard({ bot, isAdmin, onAssign, onUnassign }: BotCardP
             <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Model</div>
             <div className="text-sm font-semibold text-gray-900 truncate" title={bot.model}>{bot.model}</div>
           </div>
+          {bot.inboundPhones && bot.inboundPhones.length > 0 && (
+            <div className="space-y-1 col-span-2 pt-2 border-t border-gray-200/50">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Telefon</span>
+                <span className="font-mono font-medium text-sm">{bot.inboundPhones[0].number}</span>
+              </div>
+            </div>
+          )}
           {bot._count && (
             <div className="space-y-1 col-span-2 pt-2 border-t border-gray-200/50">
               <div className="flex justify-between items-center">
