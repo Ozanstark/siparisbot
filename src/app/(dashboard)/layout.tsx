@@ -99,6 +99,9 @@ export default async function DashboardLayout({
               <p className="text-xs text-gray-500 truncate">
                 {session.user.email}
               </p>
+              <p className="text-[10px] text-red-500 font-mono">
+                Debug: {session.user.customerType || "NULL"}
+              </p>
             </div>
           </div>
           <form action="/api/auth/signout" method="POST">
