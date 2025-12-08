@@ -16,15 +16,8 @@ export async function POST(req: NextRequest) {
   const { organizationId } = session.user
 
   try {
-    // Get deployment URL from environment or request
-    const deploymentUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
-
-    if (!deploymentUrl) {
-      return NextResponse.json(
-        { error: "Deployment URL not configured. Set NEXT_PUBLIC_APP_URL environment variable." },
-        { status: 400 }
-      )
-    }
+    // Get deployment URL - prefer NEXT_PUBLIC_APP_URL or use production domain
+    const deploymentUrl = process.env.NEXT_PUBLIC_APP_URL || "siparisbot.vercel.app"
 
     const webhookUrl = `${deploymentUrl.startsWith('http') ? deploymentUrl : `https://${deploymentUrl}`}/api/webhooks/retell`
 
