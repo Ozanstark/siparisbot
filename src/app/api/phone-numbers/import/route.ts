@@ -60,6 +60,20 @@ export async function POST(req: NextRequest) {
       phone_number: data.phoneNumber
     }
 
+    // Handle SIP credentials if provided (BYOC)
+    if (data.sipUri) {
+      retellData.termination_uri = data.sipUri
+
+      if (data.sipUsername && data.sipPassword) {
+        retellData.termination_username = data.sipUsername
+        retellData.termination_password = data.sipPassword
+      }
+    }
+
+    if (data.nickname) {
+      retellData.nickname = data.nickname
+    }
+
     // If agentId provided, bind to agent
     if (data.agentId) {
       const bot = await prisma.bot.findFirst({

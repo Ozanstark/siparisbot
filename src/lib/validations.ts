@@ -104,6 +104,10 @@ export const importPhoneNumberSchema = z.object({
   phoneNumber: z.string().regex(/^\+[1-9]\d{1,14}$/, "Invalid phone number format (use E.164)"),
   agentId: z.string().cuid().optional(),
   nickname: z.string().optional(),
+  // SIP Trunking Credentials (for NetGSM etc.)
+  sipUri: z.string().optional(),
+  sipUsername: z.string().optional(),
+  sipPassword: z.string().optional(),
 })
 
 export const updatePhoneNumberSchema = z.object({
