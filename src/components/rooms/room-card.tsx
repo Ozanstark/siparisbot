@@ -18,6 +18,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { AvailabilityCalendar } from "./availability-calendar"
 
 interface RoomType {
     id: string
@@ -205,6 +206,8 @@ export default function RoomCard({ room, onEdit, onDelete }: RoomCardProps) {
                             </div>
                         </DialogContent>
                     </Dialog>
+
+                    <AvailabilityCalendar roomTypeId={room.id} roomName={room.name} />
 
                     <div className="flex gap-1">
                         <Button

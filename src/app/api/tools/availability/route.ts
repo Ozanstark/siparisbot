@@ -47,7 +47,27 @@ export async function POST(req: NextRequest) {
         const availableRooms = []
 
         for (const room of roomTypes) {
-            // Count confirmed reservations that overlap with requested dates
+            // 1. Check for Blocked Dates (Stop Sell)
+            // checkOut day doesn't matter for availability if they leave in the morning, 
+            // but we need to ensure every night of stay is unblocked.
+            // Range: [startDate, endDate)
+            const blockedDatesCount = await prisma.roomAvailability.count({
+                where: {
+                    roomTypeId: room.id,
+                    isBlocked: true,
+                    date: {
+                        gte: startDate,
+                        lt: endDate
+                    }
+                }
+            })
+
+            if (blockedDatesCount > 0) {
+                // Room is closed for at least one night of the stay
+                continue
+            }
+
+            // 2. Count confirmed reservations that overlap with requested dates
             const bookings = await prisma.reservation.count({
                 where: {
                     roomTypeId: room.id,

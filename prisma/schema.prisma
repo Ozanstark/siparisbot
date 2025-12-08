@@ -581,8 +581,24 @@ model RoomType {
   // Relations
   organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   customer        User         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  availability    RoomAvailability[]
 
   @@index([organizationId])
   @@index([customerId])
   @@index([isActive])
+}
+
+model RoomAvailability {
+  id              String   @id @default(cuid())
+  roomTypeId      String
+  
+  date            DateTime @db.Date // Store as date only
+  isBlocked       Boolean  @default(false)
+  priceOverride   Float?   // Optional: Seasonal pricing override
+
+  // Relations
+  roomType        RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([roomTypeId, date]) // One override per date per room type
+  @@index([roomTypeId, date])
 }
