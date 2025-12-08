@@ -51,11 +51,25 @@ export async function POST(req: NextRequest) {
 
     console.log(`Received webhook event: ${event} for call ${call.call_id}`)
 
-    // Extract organizationId from metadata
-    const organizationId = call.metadata?.organizationId
+    // Extract organizationId from metadata OR find from agent_id
+    let organizationId = call.metadata?.organizationId
+
+    if (!organizationId && call.agent_id) {
+      // Try to find organization from bot's agent_id
+      const bot = await prisma.bot.findUnique({
+        where: { retellAgentId: call.agent_id },
+        select: { organizationId: true }
+      })
+
+      if (bot) {
+        organizationId = bot.organizationId
+        console.log(`✓ Found organizationId from agent_id: ${organizationId}`)
+      }
+    }
+
     if (!organizationId) {
-      console.error("No organizationId in webhook metadata")
-      await logWebhookError(data, "No organizationId in metadata")
+      console.error("No organizationId in webhook metadata or agent_id")
+      await logWebhookError(data, "No organizationId in metadata or agent_id")
       return NextResponse.json(
         { error: "Invalid metadata" },
         { status: 400 }
@@ -155,14 +169,41 @@ async function handleCallStarted(
     }
 
     // Find the owner (User) to link initiatedBy
-    // For inbound, we assign it to the bot creator or org owner
-    const owner = await prisma.user.findFirst({
-      where: { organizationId: bot.organizationId }
+    // First try to find phone number assignment
+    const phoneNumber = await prisma.phoneNumber.findFirst({
+      where: {
+        organizationId: bot.organizationId,
+        number: callData.to_number
+      },
+      include: {
+        assignedTo: true
+      }
     })
+
+    // Use assigned customer if available, otherwise use org owner
+    let owner = phoneNumber?.assignedTo
+
+    if (!owner) {
+      owner = await prisma.user.findFirst({
+        where: {
+          organizationId: bot.organizationId,
+          role: "CUSTOMER"
+        }
+      })
+    }
+
+    if (!owner) {
+      // Fallback to admin
+      owner = await prisma.user.findFirst({
+        where: { organizationId: bot.organizationId }
+      })
+    }
 
     if (!owner) {
       throw new Error(`No owner found for organization ${bot.organizationId}`)
     }
+
+    console.log(`✓ Assigned call to customer: ${owner.email} (${owner.customerType || 'no type'})`)
 
     // Create the call record
     const newCall = await prisma.call.create({
@@ -333,9 +374,10 @@ async function handleCallAnalyzed(
     if (call && customAnalysisData) {
       // Support both flat structure (simpler for dashboard) and nested 'order' object
       const data = customAnalysisData.order || customAnalysisData
+      const customerType = call.initiatedBy.customerType
 
-      if (call.initiatedBy.customerType === "RESTAURANT" && (data.items || data.customer_name)) {
-        // Create order for restaurant
+      // Create order for restaurant (or default if no customerType)
+      if ((customerType === "RESTAURANT" || !customerType) && (data.items || data.customer_name)) {
         await tx.order.create({
           data: {
             customerId: call.initiatedById,
@@ -349,8 +391,8 @@ async function handleCallAnalyzed(
             status: "PENDING"
           }
         })
-        console.log(`✓ Created order for call ${callId}`)
-      } else if (call.initiatedBy.customerType === "HOTEL" && customAnalysisData.reservation) {
+        console.log(`✓ Created order for call ${callId} (customer type: ${customerType || 'not set'})`)
+      } else if (customerType === "HOTEL" && customAnalysisData.reservation) {
         // Create reservation for hotel
         await tx.reservation.create({
           data: {
