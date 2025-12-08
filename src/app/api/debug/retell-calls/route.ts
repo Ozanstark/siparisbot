@@ -99,11 +99,12 @@ export async function GET(req: NextRequest) {
     if (hasApiKey) {
       try {
         const response = await fetch("https://api.retellai.com/v2/list-calls", {
-          method: "GET",
+          method: "POST",
           headers: {
             "Authorization": `Bearer ${organization.retellApiKey}`,
             "Content-Type": "application/json"
-          }
+          },
+          body: JSON.stringify({})
         })
 
         if (response.ok) {
