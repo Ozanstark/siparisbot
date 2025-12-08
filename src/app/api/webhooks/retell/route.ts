@@ -66,11 +66,10 @@ export async function POST(req: NextRequest) {
     const dbCall = await prisma.call.findFirst({
       where: {
         retellCallId: call.call_id,
-        organizationId
       }
     })
 
-    if (!dbCall) {
+    if (!dbCall && event !== "call_started") {
       console.error(`Call not found: ${call.call_id}`)
       await logWebhookError(data, "Call not found in database", organizationId)
       return NextResponse.json(
@@ -82,13 +81,14 @@ export async function POST(req: NextRequest) {
     // Process webhook based on event type
     switch (event) {
       case "call_started":
-        await handleCallStarted(dbCall.id, call, organizationId, data)
+        // Pass dbCall if it exists, otherwise it will create one
+        await handleCallStarted(dbCall?.id || call.call_id, call, organizationId, data, dbCall)
         break
       case "call_ended":
-        await handleCallEnded(dbCall.id, call, organizationId, data)
+        if (dbCall) await handleCallEnded(dbCall.id, call, organizationId, data)
         break
       case "call_analyzed":
-        await handleCallAnalyzed(dbCall.id, call, organizationId, data)
+        if (dbCall) await handleCallAnalyzed(dbCall.id, call, organizationId, data)
         break
       default:
         console.warn(`Unknown event type: ${event}`)
@@ -106,35 +106,91 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCallStarted(
-  callId: string,
+  callId: string, // Database ID if exists, otherwise we'll treat it as retellCallId for creation
   callData: any,
   organizationId: string,
-  fullPayload: any
+  fullPayload: any,
+  existingCall?: any // Optional existing call record
 ) {
-  console.log(`Processing call_started for call ${callId}`)
+  console.log(`Processing call_started for call ${callData.call_id}`)
 
-  await prisma.$transaction([
-    prisma.call.update({
-      where: { id: callId },
-      data: {
-        status: "IN_PROGRESS",
-        startedAt: callData.start_timestamp
-          ? new Date(callData.start_timestamp)
-          : new Date()
+  if (existingCall) {
+    // Update existing call (Outbound flow or pre-registered)
+    await prisma.$transaction([
+      prisma.call.update({
+        where: { id: existingCall.id },
+        data: {
+          status: "IN_PROGRESS",
+          startedAt: callData.start_timestamp
+            ? new Date(callData.start_timestamp)
+            : new Date()
+        }
+      }),
+      prisma.webhookLog.create({
+        data: {
+          callId: existingCall.id,
+          organizationId,
+          eventType: "CALL_STARTED",
+          payload: fullPayload,
+          processed: true
+        }
+      })
+    ])
+    console.log(`✓ Call ${existingCall.id} (Outbound/Registered) marked as IN_PROGRESS`)
+  } else {
+    // Create new call (Inbound flow)
+    console.log(`Creating NEW inbound call record for ${callData.call_id}`)
+
+    // Find the bot to link organization and owner
+    const bot = await prisma.bot.findUnique({
+      where: { retellAgentId: callData.agent_id },
+      include: {
+        organization: true,
+        inboundPhones: true
       }
-    }),
-    prisma.webhookLog.create({
+    })
+
+    if (!bot) {
+      throw new Error(`Bot not found for agent_id: ${callData.agent_id}`)
+    }
+
+    // Find the owner (User) to link initiatedBy
+    // For inbound, we assign it to the bot creator or org owner
+    const owner = await prisma.user.findFirst({
+      where: { organizationId: bot.organizationId }
+    })
+
+    if (!owner) {
+      throw new Error(`No owner found for organization ${bot.organizationId}`)
+    }
+
+    // Create the call record
+    const newCall = await prisma.call.create({
       data: {
-        callId,
-        organizationId,
+        organizationId: bot.organizationId,
+        botId: bot.id,
+        initiatedById: owner.id, // Assigned to owner for inbound
+        retellCallId: callData.call_id,
+        status: "IN_PROGRESS",
+        toNumber: callData.to_number || bot.inboundPhones?.[0]?.number || "Unknown",
+        fromNumber: callData.from_number,
+        startedAt: callData.start_timestamp ? new Date(callData.start_timestamp) : new Date(),
+      }
+    })
+
+    // Log the webhook
+    await prisma.webhookLog.create({
+      data: {
+        callId: newCall.id,
+        organizationId: bot.organizationId,
         eventType: "CALL_STARTED",
         payload: fullPayload,
         processed: true
       }
     })
-  ])
 
-  console.log(`✓ Call ${callId} marked as IN_PROGRESS`)
+    console.log(`✓ Created NEW Inbound Call ${newCall.id}`)
+  }
 }
 
 async function handleCallEnded(
