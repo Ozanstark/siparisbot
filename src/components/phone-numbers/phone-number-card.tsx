@@ -81,7 +81,7 @@ export default function PhoneNumberCard({
           <div className="flex justify-between">
             <span className="text-gray-500">Gelen Arama Asistanı:</span>
             <span className="font-medium text-blue-600 truncate max-w-[200px]">
-              {dbData?.boundAgent?.name || phoneNumber.inbound_agent_id}
+              {dbData?.inboundAgent?.name || phoneNumber.inbound_agent_id}
             </span>
           </div>
         )}
@@ -90,7 +90,7 @@ export default function PhoneNumberCard({
           <div className="flex justify-between">
             <span className="text-gray-500">Giden Arama Asistanı:</span>
             <span className="font-medium text-blue-600 truncate max-w-[200px]">
-              {phoneNumber.outbound_agent_id}
+              {dbData?.outboundAgent?.name || phoneNumber.outbound_agent_id}
             </span>
           </div>
         )}
