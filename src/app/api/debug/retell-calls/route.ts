@@ -1,35 +1,128 @@
 import { NextRequest, NextResponse } from "next/server"
-import { callRetellApi } from "@/lib/retell"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
 
+// GET /api/debug/retell-calls - Debug: Test Retell API and fetch calls
 export async function GET(req: NextRequest) {
-    try {
-        const apiKey = process.env.RETELL_API_KEY
-        const isConfigured = !!apiKey
-        const maskedKey = apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : "not_set"
+  const session = await getServerSession(authOptions)
 
-        console.log("Debug: Attempting to fetch calls from Retell...")
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
-        // Attempt to fetch calls
-        const data = await callRetellApi("GET", "/list-calls")
+  const { organizationId } = session.user
 
-        return NextResponse.json({
-            status: "success",
-            env_check: {
-                RETELL_API_KEY_CONFIGURED: isConfigured,
-                KEY_PREVIEW: maskedKey
-            },
-            data
-        })
-    } catch (error: any) {
-        console.error("Debug: Retell fetch error:", error)
-        return NextResponse.json({
-            status: "error",
-            error: error.message,
-            env_check: {
-                RETELL_API_KEY_CONFIGURED: !!process.env.RETELL_API_KEY,
-            }
-        }, { status: 500 })
+  try {
+    // 1. Get organization and API key
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        id: true,
+        name: true,
+        retellApiKey: true,
+        retellWebhookSecret: true
+      }
+    })
+
+    if (!organization) {
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 })
     }
+
+    const hasApiKey = !!organization.retellApiKey
+    const hasWebhookSecret = !!organization.retellWebhookSecret
+
+    // 2. Get calls from database
+    const dbCalls = await prisma.call.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: {
+        bot: { select: { id: true, name: true, retellAgentId: true } },
+        initiatedBy: { select: { id: true, name: true, email: true } }
+      }
+    })
+
+    // 3. Get webhook logs
+    const webhookLogs = await prisma.webhookLog.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: "desc" },
+      take: 10
+    })
+
+    // 4. Get bots
+    const bots = await prisma.bot.findMany({
+      where: { organizationId },
+      select: {
+        id: true,
+        name: true,
+        retellAgentId: true,
+        webhookUrl: true,
+        isActive: true
+      }
+    })
+
+    let retellCalls = null
+    let retellError = null
+
+    // 5. Try to fetch calls from Retell API
+    if (hasApiKey) {
+      try {
+        const response = await fetch("https://api.retellai.com/list-calls", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${organization.retellApiKey}`,
+            "Content-Type": "application/json"
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          retellCalls = data.calls || data
+        } else {
+          retellError = `Retell API Error: ${response.status} ${response.statusText}`
+          const errorData = await response.text()
+          retellError += ` - ${errorData}`
+        }
+      } catch (error: any) {
+        retellError = `Retell API Request Failed: ${error.message}`
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      organization: {
+        id: organization.id,
+        name: organization.name,
+        hasApiKey,
+        hasWebhookSecret
+      },
+      database: {
+        callsCount: dbCalls.length,
+        calls: dbCalls,
+        webhookLogsCount: webhookLogs.length,
+        webhookLogs: webhookLogs.slice(0, 5)
+      },
+      bots: {
+        count: bots.length,
+        list: bots,
+        withWebhook: bots.filter(b => b.webhookUrl).length
+      },
+      retell: {
+        hasApiKey,
+        apiWorking: !!retellCalls,
+        callsCount: retellCalls ? (Array.isArray(retellCalls) ? retellCalls.length : 0) : 0,
+        calls: retellCalls ? (Array.isArray(retellCalls) ? retellCalls.slice(0, 5) : []) : null,
+        error: retellError
+      }
+    })
+  } catch (error: any) {
+    console.error("Debug error:", error)
+    return NextResponse.json(
+      { error: "Failed to fetch debug info", details: error.message },
+      { status: 500 }
+    )
+  }
 }

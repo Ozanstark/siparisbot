@@ -1,86 +1,130 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
+
+export const dynamic = "force-dynamic"
 
 export default function RetellDebugPage() {
-    const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<any>(null)
-    const [error, setError] = useState<string | null>(null)
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-    const checkConnection = async () => {
-        setLoading(true)
-        setError(null)
-        setResult(null)
+  useEffect(() => {
+    fetchDebugData()
+  }, [])
 
-        try {
-            const res = await fetch("/api/debug/retell-calls")
-            const data = await res.json()
-
-            if (!res.ok) {
-                throw new Error(data.error || "Failed to fetch")
-            }
-
-            setResult(data)
-        } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
-        }
+  const fetchDebugData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/debug/retell-calls")
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      const result = await response.json()
+      setData(result)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  if (loading) {
     return (
-        <div className="p-8 max-w-4xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Retell API Connection Debugger</h1>
-                <Button onClick={checkConnection} disabled={loading}>
-                    {loading ? "Checking..." : "Test Connection"}
-                </Button>
-            </div>
-
-            <div className="bg-muted p-4 rounded-lg">
-                <h2 className="font-semibold mb-2">Instructions</h2>
-                <p className="text-sm text-muted-foreground">
-                    Click the button above to attempt fetching the call history directly from Retell API using the server-side API Key.
-                    This verifies if the Vercel environment is correctly configured to talk to Retell.
-                </p>
-            </div>
-
-            {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg">
-                    <h3 className="font-bold">Connection Failed</h3>
-                    <p className="font-mono text-sm mt-2">{error}</p>
-                </div>
-            )}
-
-            {result && (
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 border rounded-lg bg-card">
-                            <div className="text-sm font-medium text-muted-foreground">API Key Status</div>
-                            <div className={`text-lg font-bold ${result.env_check.RETELL_API_KEY_CONFIGURED ? "text-green-500" : "text-red-500"}`}>
-                                {result.env_check.RETELL_API_KEY_CONFIGURED ? "Configured" : "Missing"}
-                            </div>
-                            <div className="text-xs font-mono text-muted-foreground mt-1">
-                                Preview: {result.env_check.KEY_PREVIEW}
-                            </div>
-                        </div>
-                        <div className="p-4 border rounded-lg bg-card">
-                            <div className="text-sm font-medium text-muted-foreground">API Response</div>
-                            <div className="text-lg font-bold">
-                                {result.status === "success" ? "OK" : "Error"}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="border rounded-lg overflow-hidden">
-                        <div className="bg-muted px-4 py-2 text-sm font-medium">Raw Response Data</div>
-                        <pre className="p-4 bg-black/90 text-white text-xs overflow-auto max-h-[500px]">
-                            {JSON.stringify(result.data, null, 2)}
-                        </pre>
-                    </div>
-                </div>
-            )}
-        </div>
+      <div className="p-8">
+        <h1 className="text-3xl font-bold mb-4">Retell API Debug</h1>
+        <p>Yükleniyor...</p>
+      </div>
     )
+  }
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <h1 className="text-3xl font-bold mb-4">Retell API Debug</h1>
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded">
+          Hata: {error}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">🔧 Retell API Debug</h1>
+        <button
+          onClick={fetchDebugData}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          🔄 Yenile
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        {/* Organization Info */}
+        <div className="bg-white border rounded-lg p-6">
+          <h2 className="text-xl font-bold mb-4">📋 Organization</h2>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>Retell API Key:</span>
+              <span className={data?.organization?.hasApiKey ? "text-green-600" : "text-red-600"}>
+                {data?.organization?.hasApiKey ? "✅ Var" : "❌ Yok"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Retell API */}
+        <div className="bg-white border rounded-lg p-6">
+          <h2 className="text-xl font-bold mb-4">🔌 Retell API</h2>
+          {data?.retell?.apiWorking ? (
+            <div className="bg-green-50 border border-green-200 text-green-800 p-4 rounded">
+              ✅ Bağlantı OK! Çağrı sayısı: {data?.retell?.callsCount}
+            </div>
+          ) : (
+            <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded">
+              ❌ Hata: {data?.retell?.error}
+            </div>
+          )}
+        </div>
+
+        {/* Database */}
+        <div className="bg-white border rounded-lg p-6">
+          <h2 className="text-xl font-bold mb-4">💾 Database Çağrılar: {data?.database?.callsCount}</h2>
+          {data?.database?.calls?.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-2 text-left">Bot</th>
+                    <th className="p-2 text-left">Status</th>
+                    <th className="p-2 text-left">Tarih</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.database.calls.map((call: any) => (
+                    <tr key={call.id} className="border-t">
+                      <td className="p-2">{call.bot?.name}</td>
+                      <td className="p-2">{call.status}</td>
+                      <td className="p-2">{new Date(call.createdAt).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-500">Henüz çağrı yok</p>
+          )}
+        </div>
+
+        {/* Bots */}
+        <div className="bg-white border rounded-lg p-6">
+          <h2 className="text-xl font-bold mb-4">🤖 Botlar: {data?.bots?.count}</h2>
+          <p>Webhook URL'li: {data?.bots?.withWebhook} / {data?.bots?.count}</p>
+        </div>
+      </div>
+    </div>
+  )
 }
